@@ -1,26 +1,11 @@
-
 <?php
-    session_start();
 
-    $erro = "";
-    $usuario = "";
-    $perfil = "funcionario";
+$erro = "";
 
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $usuario = trim($_POST["usuario"] ?? "");
-        $senha = $_POST["senha"] ?? "";
-        $perfil = $_POST["perfil"] ?? "funcionario";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    require "login.php";
+}
 
-        if ($usuario === "" || $senha === "") {
-            $erro = "Preencha todos os campos.";
-        } elseif (!in_array($perfil, ["funcionario", "supervisor"], true)) {
-            $erro = "Selecione um perfil válido.";
-        } else {
-            // Aqui será feita a autenticação
-            // do usuário com o banco de dados.
-            $erro = "Autenticação ainda não configurada.";
-        }
-    }
 ?>
 
 <!DOCTYPE html>
@@ -36,8 +21,8 @@
 
     <main class="login-container">
 
-        <!-- PAINEL ESQUERDO -->
         <section class="painel-esquerdo">
+
             <div class="logo">
 
                 <div class="icone-logo">⚙</div>
@@ -54,9 +39,9 @@
                 </span>
 
             </div>
+
         </section>
 
-        <!-- PAINEL DIREITO -->
         <section class="painel-direito">
 
             <div class="formulario">
@@ -70,14 +55,15 @@
                 </p>
 
                 <?php if ($erro !== ""): ?>
+
                     <div class="mensagem-erro" role="alert">
                         <?= htmlspecialchars($erro, ENT_QUOTES, "UTF-8") ?>
                     </div>
+
                 <?php endif; ?>
 
-                <form method="POST" action="">
+                <form method="POST" action="login.php">
 
-                    <!-- USUÁRIO -->
                     <div class="campo">
 
                         <label for="usuario">Usuário</label>
@@ -91,15 +77,14 @@
                                 id="usuario"
                                 name="usuario"
                                 placeholder="Digite seu usuário"
-                                value="<?= htmlspecialchars($usuario, ENT_QUOTES, "UTF-8") ?>"
                                 autocomplete="username"
                                 required
                             >
 
                         </div>
+
                     </div>
 
-                    <!-- SENHA -->
                     <div class="campo">
 
                         <label for="senha">Senha</label>
@@ -118,24 +103,25 @@
                             >
 
                         </div>
+
                     </div>
 
-                    <!-- BOTÃO ENTRAR -->
                     <button type="submit" class="botao-entrar">
                         Entrar
                         <span>➜</span>
                     </button>
 
                     <div class="link-cadastro">
+
                         <p>
                             Não tem uma conta?
                             <a href="cadastro.php">Cadastre-se</a>
                         </p>
+
                     </div>
 
                 </form>
 
-                <!-- RODAPÉ -->
                 <p class="rodape">
                     ♧ Ambiente de acesso restrito
                 </p>

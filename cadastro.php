@@ -1,46 +1,114 @@
-
 <?php
-session_start();
+
+require "connection.php";
 
 $erro = "";
+$sucesso = "";
+
 $nome = "";
-$usuario = "";
 $email = "";
+$idade = "";
 $perfil = "funcionario";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
     $nome = trim($_POST["nome"] ?? "");
-    $usuario = trim($_POST["usuario"] ?? "");
     $email = trim($_POST["email"] ?? "");
+    $idade = $_POST["idade"] ?? "";
     $senha = $_POST["senha"] ?? "";
     $confirmarSenha = $_POST["confirmar_senha"] ?? "";
     $perfil = $_POST["perfil"] ?? "funcionario";
 
     if (
         $nome === "" ||
-        $usuario === "" ||
         $email === "" ||
+        $idade === "" ||
         $senha === "" ||
         $confirmarSenha === ""
     ) {
+
         $erro = "Preencha todos os campos.";
+
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
         $erro = "Digite um e-mail válido.";
-    } elseif (!in_array($perfil, ["funcionario", "supervisor"], true)) {
-        $erro = "Selecione um perfil válido.";
+
     } elseif ($senha !== $confirmarSenha) {
+
         $erro = "As senhas não coincidem.";
+
     } elseif (strlen($senha) < 8) {
+
         $erro = "A senha deve ter pelo menos 8 caracteres.";
+
+    } elseif (!in_array($perfil, ["funcionario", "supervisor"], true)) {
+
+        $erro = "Selecione um perfil válido.";
+
     } else {
-        /*
-         * Aqui será feita a gravação do usuário no banco
-         * de dados, utilizando password_hash() para proteger
-         * a senha.
-         */
-        $erro = "Validação concluída! Conecte o cadastro ao banco de dados.";
+
+        $verificar = $conn->prepare(
+            "SELECT id_fun FROM Funcionario WHERE email = ?"
+        );
+
+        $verificar->bind_param("s", $email);
+        $verificar->execute();
+
+        $resultado = $verificar->get_result();
+
+        if ($resultado->num_rows > 0) {
+
+            $erro = "Este e-mail já está cadastrado.";
+
+        } else {
+
+            $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+
+            if ($perfil === "funcionario") {
+                $tipo = "Operador";
+                $idCargo = 1;
+            } else {
+                $tipo = "Supervisor";
+                $idCargo = 2;
+            }
+
+            $stmt = $conn->prepare(
+                "INSERT INTO Funcionario 
+                (email, nome_fun, idade, senha, tipo, idCargo)
+                VALUES (?, ?, ?, ?, ?, ?)"
+            );
+
+            $stmt->bind_param(
+                "ssissi",
+                $email,
+                $nome,
+                $idade,
+                $senhaHash,
+                $tipo,
+                $idCargo
+            );
+
+            if ($stmt->execute()) {
+
+                $sucesso = "Usuário cadastrado com sucesso.";
+
+                $nome = "";
+                $email = "";
+                $idade = "";
+
+            } else {
+
+                $erro = "Erro ao cadastrar usuário.";
+
+            }
+
+            $stmt->close();
+        }
+
+        $verificar->close();
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -119,28 +187,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
-                    <!-- USUÁRIO -->
-                    <div class="campo">
-
-                        <label for="usuario">Usuário</label>
-
-                        <div class="input-container">
-
-                            <span class="campo-icone">♙</span>
-
-                            <input
-                                type="text"
-                                id="usuario"
-                                name="usuario"
-                                placeholder="Crie seu usuário"
-                                value="<?= htmlspecialchars($usuario, ENT_QUOTES, "UTF-8") ?>"
-                                autocomplete="username"
-                                required
-                            >
-
-                        </div>
-
-                    </div>
 
                     <!-- E-MAIL -->
                     <div class="campo">
