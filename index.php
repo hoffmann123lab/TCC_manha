@@ -1,6 +1,11 @@
 <?php
 
 $erro = "";
+$mensagem = "";
+
+if (isset($_GET["cadastro"]) && $_GET["cadastro"] === "sucesso") {
+    $mensagem = "Cadastro realizado com sucesso!";
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     require "login.php";
@@ -10,11 +15,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Login - SIGEP-EPI</title>
+
     <link rel="stylesheet" href="index.css">
+
 </head>
 
 <body>
@@ -53,6 +63,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <p class="descricao">
                     Acesse sua conta para continuar.
                 </p>
+
+                <?php if ($mensagem !== ""): ?>
+
+                    <div class="mensagem-sucesso" role="alert">
+                        <?= htmlspecialchars($mensagem, ENT_QUOTES, "UTF-8") ?>
+                    </div>
+
+                <?php endif; ?>
 
                 <?php if ($erro !== ""): ?>
 
@@ -107,8 +125,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
 
                     <button type="submit" class="botao-entrar">
+
                         Entrar
+
                         <span>➜</span>
+
                     </button>
 
                     <div class="link-cadastro">
@@ -133,4 +154,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </main>
 
 </body>
+
 </html>

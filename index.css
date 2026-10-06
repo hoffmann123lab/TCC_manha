@@ -384,3 +384,13 @@ body {
     color: #172b68;
     text-decoration: underline;
 }
+.mensagem-sucesso {
+    margin-bottom: 17px;
+    padding: 12px;
+    border: 1px solid #b7dfc1;
+    border-radius: 10px;
+    color: #28743a;
+    background: #f0fff3;
+    font-size: 12px;
+    line-height: 1.5;
+}

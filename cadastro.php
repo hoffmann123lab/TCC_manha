@@ -3,12 +3,10 @@
 require "connection.php";
 
 $erro = "";
-$sucesso = "";
 
 $nome = "";
 $email = "";
 $idade = "";
-$perfil = "funcionario";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -17,17 +15,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $idade = $_POST["idade"] ?? "";
     $senha = $_POST["senha"] ?? "";
     $confirmarSenha = $_POST["confirmar_senha"] ?? "";
-    $perfil = $_POST["perfil"] ?? "funcionario";
 
-    if (
-        $nome === "" ||
-        $email === "" ||
-        $idade === "" ||
-        $senha === "" ||
-        $confirmarSenha === ""
-    ) {
+    if ($nome === "") {
 
-        $erro = "Preencha todos os campos.";
+        $erro = "Preencha o nome.";
+
+    } elseif ($email === "") {
+
+        $erro = "Preencha o e-mail.";
+
+    } elseif ($idade === "") {
+
+        $erro = "Preencha a idade.";
+
+    } elseif ($senha === "") {
+
+        $erro = "Preencha a senha.";
+
+    } elseif ($confirmarSenha === "") {
+
+        $erro = "Confirme a senha.";
 
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
@@ -41,71 +48,73 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $erro = "A senha deve ter pelo menos 8 caracteres.";
 
-    } elseif (!in_array($perfil, ["funcionario", "supervisor"], true)) {
-
-        $erro = "Selecione um perfil válido.";
-
     } else {
 
         $verificar = $conn->prepare(
-            "SELECT id_fun FROM Funcionario WHERE email = ?"
+            "SELECT id_fun FROM funcionario WHERE email = ?"
         );
 
-        $verificar->bind_param("s", $email);
-        $verificar->execute();
+        if (!$verificar) {
 
-        $resultado = $verificar->get_result();
-
-        if ($resultado->num_rows > 0) {
-
-            $erro = "Este e-mail já está cadastrado.";
+            $erro = "Erro ao verificar o cadastro.";
 
         } else {
 
-            $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+            $verificar->bind_param("s", $email);
+            $verificar->execute();
 
-            if ($perfil === "funcionario") {
+            $resultado = $verificar->get_result();
+
+            if ($resultado->num_rows > 0) {
+
+                $erro = "Este e-mail já está cadastrado.";
+
+            } else {
+
+                $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+
                 $tipo = "Operador";
                 $idCargo = 1;
-            } else {
-                $tipo = "Supervisor";
-                $idCargo = 2;
+
+                $stmt = $conn->prepare(
+                    "INSERT INTO funcionario
+                    (email, nome_fun, idade, senha, tipo, idCargo)
+                    VALUES (?, ?, ?, ?, ?, ?)"
+                );
+
+                if (!$stmt) {
+
+                    $erro = "Erro ao preparar o cadastro.";
+
+                } else {
+
+                    $stmt->bind_param(
+                        "ssissi",
+                        $email,
+                        $nome,
+                        $idade,
+                        $senhaHash,
+                        $tipo,
+                        $idCargo
+                    );
+
+                    if ($stmt->execute()) {
+
+                        header("Location: index.php?cadastro=sucesso");
+                        exit;
+
+                    } else {
+
+                        $erro = "Erro ao cadastrar usuário.";
+
+                    }
+
+                    $stmt->close();
+                }
             }
 
-            $stmt = $conn->prepare(
-                "INSERT INTO Funcionario 
-                (email, nome_fun, idade, senha, tipo, idCargo)
-                VALUES (?, ?, ?, ?, ?, ?)"
-            );
-
-            $stmt->bind_param(
-                "ssissi",
-                $email,
-                $nome,
-                $idade,
-                $senhaHash,
-                $tipo,
-                $idCargo
-            );
-
-            if ($stmt->execute()) {
-
-                $sucesso = "Usuário cadastrado com sucesso.";
-
-                $nome = "";
-                $email = "";
-                $idade = "";
-
-            } else {
-
-                $erro = "Erro ao cadastrar usuário.";
-
-            }
-
-            $stmt->close();
+            $verificar->close();
         }
-
-        $verificar->close();
     }
 }
 
@@ -113,18 +122,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Cadastro - SIGEP-EPI</title>
+
     <link rel="stylesheet" href="cadastro.css">
+
 </head>
 
 <body>
 
     <main class="cadastro-container">
 
-        <!-- PAINEL ESQUERDO -->
         <section class="painel-esquerdo">
 
             <div class="logo">
@@ -141,7 +154,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </section>
 
-        <!-- PAINEL DIREITO -->
         <section class="painel-direito">
 
             <div class="formulario">
@@ -154,17 +166,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     Preencha os dados para criar sua conta.
                 </p>
 
-                <!-- MENSAGEM -->
                 <?php if ($erro !== ""): ?>
+
                     <div class="mensagem-erro" role="alert">
                         <?= htmlspecialchars($erro, ENT_QUOTES, "UTF-8") ?>
                     </div>
+
                 <?php endif; ?>
 
-                <!-- FORMULÁRIO -->
                 <form method="POST" action="">
 
-                    <!-- NOME COMPLETO -->
                     <div class="campo">
 
                         <label for="nome">Nome completo</label>
@@ -187,8 +198,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
-
-                    <!-- E-MAIL -->
                     <div class="campo">
 
                         <label for="email">E-mail</label>
@@ -211,7 +220,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
-                    <!-- SENHA -->
+                    <div class="campo">
+
+                        <label for="idade">Idade</label>
+
+                        <div class="input-container">
+
+                            <input
+                                type="number"
+                                id="idade"
+                                name="idade"
+                                placeholder="Digite sua idade"
+                                value="<?= htmlspecialchars($idade, ENT_QUOTES, "UTF-8") ?>"
+                                min="1"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
                     <div class="campo">
 
                         <label for="senha">Senha</label>
@@ -234,7 +262,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
-                    <!-- CONFIRMAR SENHA -->
                     <div class="campo">
 
                         <label for="confirmar_senha">
@@ -259,15 +286,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
-                    <!-- BOTÃO CADASTRAR -->
                     <button type="submit" class="botao-cadastrar">
+
                         Cadastrar
+
                         <span>➜</span>
+
                     </button>
 
                 </form>
 
-                <!-- LINK PARA LOGIN -->
                 <div class="link-login">
 
                     <p>
@@ -277,7 +305,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 </div>
 
-                <!-- RODAPÉ -->
                 <p class="rodape">
                     ♧ Ambiente de acesso restrito
                 </p>
@@ -289,4 +316,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </main>
 
 </body>
+
 </html>
