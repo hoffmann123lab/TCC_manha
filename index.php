@@ -7,8 +7,8 @@ if (isset($_GET["cadastro"]) && $_GET["cadastro"] === "sucesso") {
     $mensagem = "Cadastro realizado com sucesso!";
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    require "login.php";
+if (isset($_GET["erro"])) {
+    $erro = $_GET["erro"];
 }
 
 ?>
@@ -84,18 +84,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <div class="campo">
 
-                        <label for="usuario">Usuário</label>
+                        <label for="email">E-mail</label>
 
                         <div class="input-container">
 
-                            <span class="campo-icone">♙</span>
+                            <span class="campo-icone">✉</span>
 
                             <input
-                                type="text"
-                                id="usuario"
-                                name="usuario"
-                                placeholder="Digite seu usuário"
-                                autocomplete="username"
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Digite seu e-mail"
+                                autocomplete="email"
                                 required
                             >
 

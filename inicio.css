@@ -1,0 +1,317 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu {
+    width: 250px;
+    background: #1e3a5f;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 25px 15px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.icone-logo {
+    width: 42px;
+    height: 42px;
+    background: white;
+    color: #1e3a5f;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.logo h1 {
+    font-size: 18px;
+}
+
+.logo span {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 30px;
+}
+
+nav a,
+.sair {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+nav a:hover,
+nav a.ativo {
+    background: #2563eb;
+}
+
+.sair {
+    margin-top: auto;
+}
+
+.sair:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.conteudo {
+    flex: 1;
+    padding: 35px 45px;
+    overflow-y: auto;
+}
+
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.subtitulo {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.topo h2 {
+    font-size: 30px;
+    margin: 6px 0;
+}
+
+.topo p {
+    color: #64748b;
+}
+
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.usuario strong,
+.usuario span {
+    display: block;
+}
+
+.usuario span {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 35px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-icone {
+    width: 45px;
+    height: 45px;
+    background: #eff6ff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.card span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.card strong {
+    font-size: 25px;
+}
+
+.acoes {
+    margin-bottom: 35px;
+}
+
+.acoes h3,
+.atividade h3 {
+    font-size: 20px;
+    margin-bottom: 18px;
+}
+
+.acoes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.acao {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: 0.2s;
+}
+
+.acao:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.acao-icone {
+    width: 45px;
+    height: 45px;
+    background: #eff6ff;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.acao div:nth-child(2) {
+    flex: 1;
+}
+
+.acao strong,
+.acao span {
+    display: block;
+}
+
+.acao span {
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.acao b {
+    color: #2563eb;
+    font-size: 20px;
+}
+
+.atividade {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.secao-titulo span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.atividade-vazia {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+    padding: 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+}
+
+.atividade-vazia div {
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+.atividade-vazia strong {
+    color: #1e293b;
+}
+
+@media (max-width: 900px) {
+
+    .menu {
+        width: 210px;
+    }
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .menu {
+        display: none;
+    }
+
+    .conteudo {
+        padding: 25px 20px;
+    }
+
+    .topo {
+        align-items: flex-start;
+        gap: 20px;
+        flex-direction: column;
+    }
+
+    .cards,
+    .acoes-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
