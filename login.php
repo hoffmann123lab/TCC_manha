@@ -55,7 +55,7 @@ $_SESSION["tipo"] = $dados["tipo"];
 
 $stmt->close();
 
-header("Location: inicio.php");
+header("Location: dashboard.php");
 exit;
 
 ?>

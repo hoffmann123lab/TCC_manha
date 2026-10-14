@@ -1,0 +1,311 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1e293b;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.menu {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #17365d;
+    color: white;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 10px 25px;
+    border-bottom: 1px solid #ffffff25;
+}
+
+.icone-logo {
+    width: 42px;
+    height: 42px;
+    background: white;
+    color: #17365d;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+}
+
+.logo h1 {
+    font-size: 18px;
+}
+
+.logo span {
+    display: block;
+    font-size: 11px;
+    margin-top: 5px;
+    opacity: 0.75;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+nav a,
+.sair {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+nav a:hover,
+nav a.ativo {
+    background: #2563eb;
+}
+
+.sair {
+    margin-top: auto;
+}
+
+.sair:hover {
+    background: #ffffff20;
+}
+
+.conteudo {
+    margin-left: 250px;
+    padding: 35px;
+}
+
+.topo {
+    margin-bottom: 30px;
+}
+
+.subtitulo {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.topo h2 {
+    font-size: 28px;
+    margin: 8px 0;
+}
+
+.topo p,
+.titulo-painel p {
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 7px;
+}
+
+.resumo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.card span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.card strong {
+    font-size: 27px;
+}
+
+.painel {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.titulo-painel {
+    margin-bottom: 22px;
+}
+
+.titulo-painel h3 {
+    font-size: 19px;
+}
+
+.pesquisa {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.pesquisa input {
+    flex: 1;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.pesquisa input:focus {
+    border-color: #2563eb;
+}
+
+.pesquisa button {
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    padding: 13px 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.pesquisa button:hover {
+    background: #1d4ed8;
+}
+
+.pesquisa a {
+    align-self: center;
+    color: #2563eb;
+    font-size: 13px;
+}
+
+.tabela-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 15px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+    background: #f8fafc;
+    color: #475569;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+.status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.baixo {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.normal {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.vazio {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+}
+
+@media (max-width: 1000px) {
+    .resumo {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .menu {
+        width: 210px;
+    }
+
+    .conteudo {
+        margin-left: 210px;
+        padding: 25px;
+    }
+}
+
+@media (max-width: 650px) {
+    .menu {
+        width: 70px;
+        padding: 20px 8px;
+    }
+
+    .logo {
+        justify-content: center;
+        padding: 0 0 20px;
+    }
+
+    .logo h1,
+    .logo span,
+    nav a span,
+    .sair span {
+        display: none;
+    }
+
+    nav a,
+    .sair {
+        justify-content: center;
+        padding: 14px 8px;
+    }
+
+    .conteudo {
+        margin-left: 70px;
+        padding: 20px 12px;
+    }
+
+    .painel {
+        padding: 16px;
+    }
+
+    .pesquisa {
+        flex-wrap: wrap;
+    }
+
+    .pesquisa input {
+        flex-basis: 100%;
+    }
+}
