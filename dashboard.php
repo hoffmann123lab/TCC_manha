@@ -1,8 +1,15 @@
 
 <?php
+session_start();
 
-$nome = "Funcionário";
+if (!isset($_SESSION["id_fun"])) {
+    header("Location: index.php");
+    exit;
+}
 
+$nome = $_SESSION["nome_fun"] ?? "Funcionário";
+$tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$inicial = strtoupper(substr($nome, 0, 1));
 ?>
 
 <!DOCTYPE html>
@@ -55,23 +62,20 @@ $nome = "Funcionário";
                     <span>Estoque</span>
                 </a>
 
-                <a href="usuarios.php">
-                    👥
-                    <span>Funcionários</span>
-                </a>
+                <?php if ($tipoAcesso === "Supervisor"): ?>
+                    <a href="usuarios.php">
+                        👥
+                        <span>Funcionários</span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="perfil.php">
                     👤
                     <span>Meu perfil</span>
                 </a>
-
-                <a href="configuracoes.php">
-                    ⚙
-                    <span>Configurações</span>
-                </a>
             </nav>
 
-            <a href="index.php" class="sair">
+            <a href="logout.php" class="sair">
                 🚪
                 <span>Sair</span>
             </a>
@@ -88,10 +92,16 @@ $nome = "Funcionário";
                 </div>
 
                 <div class="usuario">
-                    <div class="avatar">F</div>
+                    <div class="avatar">
+                        <?= htmlspecialchars($inicial, ENT_QUOTES, "UTF-8") ?>
+                    </div>
                     <div>
-                        <strong><?= htmlspecialchars($nome, ENT_QUOTES, "UTF-8") ?></strong>
-                        <span>Funcionário</span>
+                        <strong>
+                            <?= htmlspecialchars($nome, ENT_QUOTES, "UTF-8") ?>
+                        </strong>
+                        <span>
+                            <?= $tipoAcesso === "Supervisor" ? "Supervisor" : "Funcionário / Operador" ?>
+                        </span>
                     </div>
                 </div>
             </header>

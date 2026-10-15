@@ -132,11 +132,6 @@ $resultado = $conn->query(
                     👤
                     <span>Meu perfil</span>
                 </a>
-
-                <a href="configuracoes.php">
-                    ⚙
-                    <span>Configurações</span>
-                </a>
             </nav>
 
             <a href="index.php" class="sair">

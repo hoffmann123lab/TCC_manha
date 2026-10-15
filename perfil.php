@@ -65,7 +65,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <a href="analises.php">▥ <span>Análises</span></a>
             <a href="planilhas.php">▦ <span>Planilhas</span></a>
             <a href="relatorios.php">▧ <span>Relatórios</span></a>
-            <a href="configuracoes.php">⚙ <span>Configurações</span></a>
             <a href="perfil.php" class="ativo">♙ <span>Meu perfil</span></a>
         </nav>
 
