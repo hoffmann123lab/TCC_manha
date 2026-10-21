@@ -1,8 +1,16 @@
 
 <?php
 
+session_start();
+
+if (!isset($_SESSION["id_fun"])) {
+    header("Location: index.php");
+    exit;
+}
+
 require "connection.php";
 
+$tipoAcesso = $_SESSION["tipo"] ?? "Operador";
 $pesquisa = trim($_GET["pesquisa"] ?? "");
 
 if ($pesquisa !== "") {
@@ -59,11 +67,15 @@ if ($pesquisa !== "") {
                 <a href="planilhas.php" class="ativo">📁 <span>Planilhas</span></a>
                 <a href="relatorios.php">📈 <span>Relatórios</span></a>
                 <a href="estoque.php">📦 <span>Estoque</span></a>
-                <a href="usuarios.php">👥 <span>Funcionários</span></a>
+
+                <?php if ($tipoAcesso === "Supervisor"): ?>
+                    <a href="usuarios.php">👥 <span>Funcionários</span></a>
+                <?php endif; ?>
+
                 <a href="perfil.php">👤 <span>Meu perfil</span></a>
             </nav>
 
-            <a href="index.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="logout.php" class="sair">🚪 <span>Sair</span></a>
         </aside>
 
         <main class="conteudo">

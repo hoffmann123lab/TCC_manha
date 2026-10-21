@@ -1,42 +1,42 @@
 
 <?php
 
+session_start();
+
+if (!isset($_SESSION["id_fun"])) {
+    header("Location: index.php");
+    exit;
+}
+
 require "connection.php";
 
-$mensagem = "";
+$tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$idFuncionario = (int) $_SESSION["id_fun"];
 
-$email = "";
+$mensagem = "";
 $nome = "";
+$email = "";
 $idade = "";
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = trim($_POST["email"] ?? "");
+$stmt = $conn->prepare(
+    "SELECT nome_fun, email, idade FROM funcionario WHERE id_fun = ?"
+);
 
-    if ($email === "" || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $mensagem = "Informe um e-mail válido.";
-    } else {
-        $stmt = $conn->prepare(
-            "SELECT nome_fun, email, idade FROM Funcionario WHERE email = ?"
-        );
+$stmt->bind_param("i", $idFuncionario);
+$stmt->execute();
 
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
+$resultado = $stmt->get_result();
 
-        $resultado = $stmt->get_result();
-
-        if ($resultado->num_rows > 0) {
-            $funcionario = $resultado->fetch_assoc();
-            $nome = $funcionario["nome_fun"];
-            $email = $funcionario["email"];
-            $idade = $funcionario["idade"];
-            $mensagem = "Dados do funcionário encontrados.";
-        } else {
-            $mensagem = "Nenhum funcionário encontrado com esse e-mail.";
-        }
-
-        $stmt->close();
-    }
+if ($resultado->num_rows > 0) {
+    $funcionario = $resultado->fetch_assoc();
+    $nome = $funcionario["nome_fun"];
+    $email = $funcionario["email"];
+    $idade = $funcionario["idade"];
+} else {
+    $mensagem = "Não foi possível encontrar os dados do seu perfil.";
 }
+
+$stmt->close();
 
 ?>
 
@@ -49,90 +49,118 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="perfil.css">
 </head>
 <body>
-
-    <aside class="menu">
-        <div class="logo">
-            <div class="icone-logo">⚙</div>
-            <div>
-                <h1>SIGEP-EPI</h1>
-                <span>Sistema de Gestão</span>
+    <div class="dashboard">
+        <aside class="menu">
+            <div class="logo">
+                <div class="icone-logo">⚙</div>
+                <div>
+                    <h1>SIGEP-EPI</h1>
+                    <span>Sistema de Gestão</span>
+                </div>
             </div>
-        </div>
 
-        <nav>
-            <a href="dashboard.php">⌂ <span>Início</span></a>
-            <a href="producao.php">▤ <span>Produção</span></a>
-            <a href="analises.php">▥ <span>Análises</span></a>
-            <a href="planilhas.php">▦ <span>Planilhas</span></a>
-            <a href="relatorios.php">▧ <span>Relatórios</span></a>
-            <a href="perfil.php" class="ativo">♙ <span>Meu perfil</span></a>
-        </nav>
+            <nav>
+                <a href="dashboard.php">
+                    🏠
+                    <span>Início</span>
+                </a>
 
-        <a href="index.php" class="sair">↪ <span>Sair</span></a>
-    </aside>
+                <a href="producao.php">
+                    📋
+                    <span>Produção</span>
+                </a>
 
-    <main class="conteudo">
-        <header class="topo">
-            <span class="subtitulo">DADOS CADASTRAIS</span>
-            <h2>Meu perfil</h2>
-            <p>Consulte os dados cadastrados no SIGEP-EPI.</p>
-        </header>
+                <a href="analises.php">
+                    📊
+                    <span>Análises</span>
+                </a>
 
-        <section class="painel">
-            <div class="avatar">♙</div>
+                <a href="planilhas.php">
+                    📁
+                    <span>Planilhas</span>
+                </a>
 
-            <h3>Consultar funcionário</h3>
-            <p class="descricao">
-                Digite o e-mail utilizado no cadastro para consultar os dados.
-            </p>
+                <a href="relatorios.php">
+                    📈
+                    <span>Relatórios</span>
+                </a>
 
-            <?php if ($mensagem !== ""): ?>
-                <div class="mensagem">
-                    <?= htmlspecialchars($mensagem, ENT_QUOTES, "UTF-8") ?>
-                </div>
-            <?php endif; ?>
+                <a href="estoque.php">
+                    📦
+                    <span>Estoque</span>
+                </a>
 
-            <form method="POST" action="perfil.php">
-                <div class="campo">
-                    <label for="email">E-mail cadastrado</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value="<?= htmlspecialchars($email, ENT_QUOTES, "UTF-8") ?>"
-                        placeholder="Digite seu e-mail"
-                        required
-                    >
-                </div>
+                <?php if ($tipoAcesso === "Supervisor"): ?>
+                    <a href="usuarios.php">
+                        👥
+                        <span>Funcionários</span>
+                    </a>
+                <?php endif; ?>
 
-                <button type="submit">Consultar dados</button>
-            </form>
+                <a href="perfil.php" class="ativo">
+                    👤
+                    <span>Meu perfil</span>
+                </a>
+            </nav>
 
-            <?php if ($nome !== ""): ?>
-                <div class="dados">
-                    <div class="item">
-                        <span>Nome completo</span>
-                        <strong><?= htmlspecialchars($nome, ENT_QUOTES, "UTF-8") ?></strong>
+            <a href="logout.php" class="sair">
+                🚪
+                <span>Sair</span>
+            </a>
+        </aside>
+
+        <main class="conteudo">
+            <header class="topo">
+                <span class="subtitulo">DADOS CADASTRAIS</span>
+                <h2>Meu perfil</h2>
+                <p>Consulte seus dados cadastrados no SIGEP-EPI.</p>
+            </header>
+
+            <section class="painel">
+                <div class="avatar">👤</div>
+
+                <h3>Dados do funcionário</h3>
+                <p class="descricao">
+                    Confira as informações vinculadas à sua conta.
+                </p>
+
+                <?php if ($mensagem !== ""): ?>
+                    <div class="mensagem">
+                        <?= htmlspecialchars($mensagem, ENT_QUOTES, "UTF-8") ?>
                     </div>
+                <?php endif; ?>
 
-                    <div class="item">
-                        <span>E-mail</span>
-                        <strong><?= htmlspecialchars($email, ENT_QUOTES, "UTF-8") ?></strong>
+                <?php if ($nome !== ""): ?>
+                    <div class="dados">
+                        <div class="item">
+                            <span>Nome completo</span>
+                            <strong>
+                                <?= htmlspecialchars($nome, ENT_QUOTES, "UTF-8") ?>
+                            </strong>
+                        </div>
+
+                        <div class="item">
+                            <span>E-mail</span>
+                            <strong>
+                                <?= htmlspecialchars($email, ENT_QUOTES, "UTF-8") ?>
+                            </strong>
+                        </div>
+
+                        <div class="item">
+                            <span>Idade</span>
+                            <strong><?= (int) $idade ?> anos</strong>
+                        </div>
+
+                        <div class="item">
+                            <span>Tipo de acesso</span>
+                            <strong>
+                                <?= htmlspecialchars($tipoAcesso, ENT_QUOTES, "UTF-8") ?>
+                            </strong>
+                        </div>
                     </div>
-
-                    <div class="item">
-                        <span>Idade</span>
-                        <strong><?= (int) $idade ?> anos</strong>
-                    </div>
-
-                    <div class="item">
-                        <span>Tipo de acesso</span>
-                        <strong>Funcionário / Operador</strong>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </section>
-    </main>
-
+                <?php endif; ?>
+            </section>
+        </main>
+    </div>
 </body>
 </html>

@@ -1,7 +1,16 @@
 
 <?php
+session_start();
+
+if (!isset($_SESSION["id_fun"])) {
+    header("Location: index.php");
+    exit;
+}
 
 require "connection.php";
+
+$tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$idFuncionario = (int) $_SESSION["id_fun"];
 
 $erro = "";
 $sucesso = "";
@@ -25,15 +34,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $quantidade === ""
     ) {
         $erro = "Preencha todos os campos.";
-    } elseif (!filter_var($quantidade, FILTER_VALIDATE_INT) || (int) $quantidade < 0) {
+    } elseif (
+        filter_var($quantidade, FILTER_VALIDATE_INT) === false ||
+        (int) $quantidade < 0
+    ) {
         $erro = "Informe uma quantidade válida.";
     } else {
         $nomePlanilha = "Registro de produção";
-        $idFuncionario = 1;
         $quantidade = (int) $quantidade;
 
         $stmt = $conn->prepare(
-            "INSERT INTO Planilhas
+            "INSERT INTO planilhas
             (idFuncionario, descricao, tipo, uni_med, colaborador, setor, nome_plan, produto, quantidade, entrada)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
         );
@@ -67,10 +78,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 $resultado = $conn->query(
     "SELECT id_plan, descricao, tipo, uni_med, colaborador, setor, produto, quantidade, entrada
-    FROM Planilhas
+    FROM planilhas
     ORDER BY id_plan DESC"
 );
-
 ?>
 
 <!DOCTYPE html>
@@ -123,10 +133,12 @@ $resultado = $conn->query(
                     <span>Estoque</span>
                 </a>
 
-                <a href="usuarios.php">
-                    👥
-                    <span>Funcionários</span>
-                </a>
+                <?php if ($tipoAcesso === "Supervisor"): ?>
+                    <a href="usuarios.php">
+                        👥
+                        <span>Funcionários</span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="perfil.php">
                     👤
@@ -134,7 +146,7 @@ $resultado = $conn->query(
                 </a>
             </nav>
 
-            <a href="index.php" class="sair">
+            <a href="logout.php" class="sair">
                 🚪
                 <span>Sair</span>
             </a>
@@ -200,7 +212,7 @@ $resultado = $conn->query(
 
                         <div class="campo">
                             <label for="quantidade">Quantidade</label>
-                            <input type="number" id="quantidade" name="quantidade" min="0" required>
+                            <input type="number" id="quantidade" name="quantidade" min="0" step="1" required>
                         </div>
                     </div>
 
