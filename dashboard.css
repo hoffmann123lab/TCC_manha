@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +7,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: #f8fafc;
+    background: #f4f7fb;
     color: #1e293b;
 }
 
@@ -16,37 +17,42 @@ a {
 }
 
 .dashboard {
-    display: flex;
     min-height: 100vh;
 }
 
 .menu {
     width: 250px;
-    background: #1e3a5f;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #17365d;
     color: white;
+    padding: 25px 15px;
     display: flex;
     flex-direction: column;
-    padding: 25px 15px;
+    z-index: 10;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 10px 30px;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding: 0 10px 25px;
+    border-bottom: 1px solid #ffffff25;
 }
 
 .icone-logo {
     width: 42px;
     height: 42px;
     background: white;
-    color: #1e3a5f;
+    color: #17365d;
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 25px;
+    flex-shrink: 0;
 }
 
 .logo h1 {
@@ -54,14 +60,16 @@ a {
 }
 
 .logo span {
+    display: block;
     font-size: 11px;
-    opacity: 0.7;
+    margin-top: 5px;
+    opacity: 0.75;
 }
 
 nav {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     margin-top: 30px;
 }
 
@@ -70,10 +78,19 @@ nav a,
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 13px 15px;
+    padding: 14px;
     border-radius: 8px;
     font-size: 14px;
     transition: 0.2s;
+}
+
+.icone-menu {
+    width: 20px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
 }
 
 nav a:hover,
@@ -86,20 +103,21 @@ nav a.ativo {
 }
 
 .sair:hover {
-    background: rgba(255,255,255,0.1);
+    background: #ffffff20;
 }
 
 .conteudo {
-    flex: 1;
-    padding: 35px 45px;
-    overflow-y: auto;
+    margin-left: 250px;
+    padding: 35px;
+    min-width: 0;
 }
 
 .topo {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 35px;
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .subtitulo {
@@ -110,18 +128,20 @@ nav a.ativo {
 }
 
 .topo h2 {
-    font-size: 30px;
-    margin: 6px 0;
+    font-size: 28px;
+    margin: 8px 0;
 }
 
 .topo p {
     color: #64748b;
+    font-size: 14px;
 }
 
 .usuario {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
 }
 
 .avatar {
@@ -134,22 +154,27 @@ nav a.ativo {
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    flex-shrink: 0;
 }
 
-.usuario strong,
-.usuario span {
+.usuario-info strong,
+.usuario-info span {
     display: block;
 }
 
-.usuario span {
+.usuario-info strong {
+    font-size: 14px;
+}
+
+.usuario-info span {
     font-size: 12px;
     color: #64748b;
-    margin-top: 3px;
+    margin-top: 4px;
 }
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
     margin-bottom: 35px;
 }
@@ -162,12 +187,15 @@ nav a.ativo {
     display: flex;
     align-items: center;
     gap: 15px;
+    min-width: 0;
 }
 
 .card-icone {
     width: 45px;
     height: 45px;
+    flex-shrink: 0;
     background: #eff6ff;
+    color: #2563eb;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -198,7 +226,7 @@ nav a.ativo {
 
 .acoes-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
 }
 
@@ -210,6 +238,7 @@ nav a.ativo {
     display: flex;
     align-items: center;
     gap: 15px;
+    min-width: 0;
     transition: 0.2s;
 }
 
@@ -221,7 +250,9 @@ nav a.ativo {
 .acao-icone {
     width: 45px;
     height: 45px;
+    flex-shrink: 0;
     background: #eff6ff;
+    color: #2563eb;
     border-radius: 9px;
     display: flex;
     align-items: center;
@@ -229,13 +260,18 @@ nav a.ativo {
     font-size: 20px;
 }
 
-.acao div:nth-child(2) {
+.acao-texto {
     flex: 1;
+    min-width: 0;
 }
 
 .acao strong,
 .acao span {
     display: block;
+}
+
+.acao strong {
+    font-size: 14px;
 }
 
 .acao span {
@@ -270,43 +306,81 @@ nav a.ativo {
     align-items: center;
     gap: 8px;
     color: #64748b;
+    text-align: center;
 }
 
 .atividade-vazia div {
     font-size: 30px;
     margin-bottom: 5px;
+    color: #2563eb;
 }
 
 .atividade-vazia strong {
     color: #1e293b;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
+    .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
 
+@media (max-width: 900px) {
     .menu {
         width: 210px;
     }
 
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-}
-
-@media (max-width: 650px) {
-
-    .menu {
-        display: none;
-    }
-
     .conteudo {
-        padding: 25px 20px;
+        margin-left: 210px;
+        padding: 25px;
     }
 
     .topo {
         align-items: flex-start;
-        gap: 20px;
+    }
+
+    .usuario {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 650px) {
+    .menu {
+        width: 70px;
+        padding: 20px 8px;
+    }
+
+    .logo {
+        justify-content: center;
+        padding: 0 0 20px;
+    }
+
+    .logo h1,
+    .logo span,
+    nav a span:not(.icone-menu),
+    .sair span:not(.icone-menu) {
+        display: none;
+    }
+
+    nav a,
+    .sair {
+        justify-content: center;
+        padding: 14px 8px;
+    }
+
+    .conteudo {
+        margin-left: 70px;
+        padding: 20px 12px;
+    }
+
+    .topo {
+        align-items: flex-start;
         flex-direction: column;
+        gap: 20px;
+    }
+
+    .topo h2 {
+        font-size: 24px;
     }
 
     .cards,
@@ -314,4 +388,19 @@ nav a.ativo {
         grid-template-columns: 1fr;
     }
 
+    .card {
+        padding: 18px;
+    }
+
+    .acao {
+        padding: 16px;
+    }
+
+    .atividade {
+        padding: 18px;
+    }
+
+    .atividade-vazia {
+        padding: 25px 10px;
+    }
 }

@@ -16,6 +16,10 @@ a {
     color: inherit;
 }
 
+.dashboard {
+    min-height: 100vh;
+}
+
 .menu {
     width: 250px;
     height: 100vh;
@@ -47,6 +51,7 @@ a {
     align-items: center;
     justify-content: center;
     font-size: 25px;
+    flex-shrink: 0;
 }
 
 .logo h1 {
@@ -78,6 +83,15 @@ nav a,
     transition: 0.2s;
 }
 
+.icone-menu {
+    width: 20px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+}
+
 nav a:hover,
 nav a.ativo {
     background: #2563eb;
@@ -94,6 +108,7 @@ nav a.ativo {
 .conteudo {
     margin-left: 250px;
     padding: 35px;
+    min-width: 0;
 }
 
 .topo {
@@ -127,6 +142,7 @@ nav a.ativo {
     border-radius: 8px;
     padding: 12px 16px;
     font-size: 13px;
+    white-space: nowrap;
 }
 
 .botao-voltar:hover {
@@ -143,8 +159,17 @@ nav a.ativo {
 }
 
 .painel h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 19px;
     margin-bottom: 22px;
+}
+
+.icone-titulo {
+    color: #2563eb;
+    font-size: 22px;
+    font-weight: normal;
 }
 
 .form-grid {
@@ -171,6 +196,8 @@ nav a.ativo {
     border-radius: 8px;
     outline: none;
     font-size: 14px;
+    background: white;
+    color: #1e293b;
 }
 
 .campo input:focus {
@@ -188,6 +215,7 @@ nav a.ativo {
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 .botao-salvar:hover {
@@ -227,12 +255,17 @@ td {
     padding: 14px 12px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
 }
 
 th {
     background: #f8fafc;
     color: #475569;
     font-weight: bold;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
 }
 
 .vazio {
@@ -265,8 +298,8 @@ th {
 
     .logo h1,
     .logo span,
-    nav a span,
-    .sair span {
+    nav a span:not(.icone-menu),
+    .sair span:not(.icone-menu) {
         display: none;
     }
 
@@ -286,11 +319,19 @@ th {
         flex-direction: column;
     }
 
+    .topo h2 {
+        font-size: 24px;
+    }
+
     .form-grid {
         grid-template-columns: 1fr;
     }
 
     .painel {
         padding: 18px;
+    }
+
+    .botao-voltar {
+        align-self: flex-start;
     }
 }

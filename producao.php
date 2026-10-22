@@ -104,50 +104,50 @@ $resultado = $conn->query(
 
             <nav>
                 <a href="dashboard.php">
-                    🏠
+                    <span class="icone-menu">⌂</span>
                     <span>Início</span>
                 </a>
 
                 <a href="producao.php" class="ativo">
-                    📋
+                    <span class="icone-menu">▤</span>
                     <span>Produção</span>
                 </a>
 
                 <a href="analises.php">
-                    📊
+                    <span class="icone-menu">▥</span>
                     <span>Análises</span>
                 </a>
 
                 <a href="planilhas.php">
-                    📁
+                    <span class="icone-menu">▦</span>
                     <span>Planilhas</span>
                 </a>
 
                 <a href="relatorios.php">
-                    📈
+                    <span class="icone-menu">▧</span>
                     <span>Relatórios</span>
                 </a>
 
                 <a href="estoque.php">
-                    📦
+                    <span class="icone-menu">▣</span>
                     <span>Estoque</span>
                 </a>
 
                 <?php if ($tipoAcesso === "Supervisor"): ?>
                     <a href="usuarios.php">
-                        👥
+                        <span class="icone-menu">♙</span>
                         <span>Funcionários</span>
                     </a>
                 <?php endif; ?>
 
                 <a href="perfil.php">
-                    👤
+                    <span class="icone-menu">♙</span>
                     <span>Meu perfil</span>
                 </a>
             </nav>
 
             <a href="index.php" class="sair">
-                🚪
+                <span class="icone-menu">↪</span>
                 <span>Sair</span>
             </a>
         </aside>
@@ -159,8 +159,6 @@ $resultado = $conn->query(
                     <h2>Produção</h2>
                     <p>Cadastre e consulte os registros de produção.</p>
                 </div>
-
-                <a href="dashboard.php" class="botao-voltar">Voltar ao início</a>
             </header>
 
             <?php if ($erro !== ""): ?>
@@ -176,7 +174,10 @@ $resultado = $conn->query(
             <?php endif; ?>
 
             <section class="painel">
-                <h3>Novo registro</h3>
+                <h3>
+                    <span class="icone-titulo">＋</span>
+                    Novo registro
+                </h3>
 
                 <form method="POST" action="producao.php">
                     <div class="form-grid">
@@ -221,7 +222,10 @@ $resultado = $conn->query(
             </section>
 
             <section class="painel registros">
-                <h3>Registros cadastrados</h3>
+                <h3>
+                    <span class="icone-titulo">▤</span>
+                    Registros cadastrados
+                </h3>
 
                 <div class="tabela-container">
                     <table>

@@ -12,8 +12,12 @@ body {
 }
 
 a {
-    text-decoration: none;
     color: inherit;
+    text-decoration: none;
+}
+
+.dashboard {
+    min-height: 100vh;
 }
 
 .menu {
@@ -27,6 +31,7 @@ a {
     padding: 25px 15px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .logo {
@@ -40,13 +45,15 @@ a {
 .icone-logo {
     width: 42px;
     height: 42px;
+    flex-shrink: 0;
     background: white;
     color: #17365d;
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 25px;
+    font-size: 23px;
+    font-weight: bold;
 }
 
 .logo h1 {
@@ -60,11 +67,20 @@ a {
     opacity: 0.75;
 }
 
+.menu-titulo {
+    margin-top: 27px;
+    padding: 0 12px;
+    color: #b8c9df;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
 nav {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 30px;
+    margin-top: 18px;
 }
 
 nav a,
@@ -72,15 +88,28 @@ nav a,
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px;
+    min-height: 45px;
+    padding: 12px 14px;
     border-radius: 8px;
+    color: #e2e8f0;
     font-size: 14px;
-    transition: 0.2s;
+    transition: background 0.2s;
+}
+
+.icone-menu {
+    width: 20px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    line-height: 1;
 }
 
 nav a:hover,
 nav a.ativo {
     background: #2563eb;
+    color: white;
 }
 
 .sair {
@@ -92,6 +121,7 @@ nav a.ativo {
 }
 
 .conteudo {
+    min-height: 100vh;
     margin-left: 250px;
     padding: 35px;
 }
@@ -112,28 +142,40 @@ nav a.ativo {
 }
 
 .topo h2 {
-    font-size: 28px;
     margin: 8px 0;
+    color: #1e293b;
+    font-size: 28px;
 }
 
 .topo p,
 .descricao {
+    margin-top: 6px;
     color: #64748b;
     font-size: 14px;
-    margin-top: 6px;
+    line-height: 1.6;
 }
 
 .botao-voltar {
-    background: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 12px 16px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    padding: 12px 16px;
+    background: white;
     font-size: 13px;
+    transition: 0.2s;
 }
 
 .botao-voltar:hover {
     border-color: #2563eb;
     color: #2563eb;
+}
+
+.seta-voltar {
+    font-size: 17px;
 }
 
 .cards {
@@ -144,113 +186,279 @@ nav a.ativo {
 }
 
 .card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 22px;
     display: flex;
     align-items: center;
     gap: 15px;
+    min-width: 0;
+    min-height: 120px;
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    transition: box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px #17365d0d;
 }
 
 .card-icone {
-    width: 46px;
-    height: 46px;
-    background: #eff6ff;
-    color: #2563eb;
-    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 10px;
     font-size: 21px;
+    font-weight: bold;
+}
+
+.card-icone.azul {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.card-icone.verde {
+    background: #ecfdf5;
+    color: #15803d;
+}
+
+.card-icone.roxo {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.card-conteudo {
+    min-width: 0;
 }
 
 .card span {
     display: block;
+    margin-bottom: 8px;
     color: #64748b;
     font-size: 13px;
-    margin-bottom: 8px;
+    line-height: 1.5;
 }
 
 .card strong {
+    display: block;
+    color: #1e293b;
     font-size: 25px;
+    overflow-wrap: anywhere;
 }
 
 .painel {
-    background: white;
+    margin-bottom: 25px;
+    padding: 25px;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 25px;
+    background: white;
+}
+
+.painel-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #edf1f6;
 }
 
 .painel h3 {
-    font-size: 19px;
     margin-bottom: 8px;
+    color: #1e293b;
+    font-size: 19px;
+}
+
+.contador-setores {
+    flex-shrink: 0;
+    padding: 9px 12px;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 .grafico {
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    margin-top: 30px;
+    gap: 23px;
+    margin-top: 25px;
 }
 
 .barra-item {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 11px;
 }
 
 .barra-info {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 15px;
     font-size: 13px;
 }
 
-.barra-info span {
+.nome-setor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.numero-setor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.texto-setor {
     overflow-wrap: anywhere;
 }
 
 .barra-info strong {
+    flex-shrink: 0;
     color: #2563eb;
+    font-size: 12px;
 }
 
 .barra-fundo {
     width: 100%;
-    height: 12px;
-    background: #e2e8f0;
-    border-radius: 20px;
+    height: 10px;
     overflow: hidden;
+    border-radius: 20px;
+    background: #e2e8f0;
 }
 
 .barra {
     height: 100%;
-    background: #2563eb;
     border-radius: 20px;
+    background: #2563eb;
+    transition: width 0.3s ease;
 }
 
 .vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 25px;
-    padding: 30px;
-    text-align: center;
-    color: #64748b;
-    background: #f8fafc;
+    padding: 35px 20px;
     border-radius: 8px;
-    font-size: 14px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.vazio-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 22px;
+}
+
+.vazio h4 {
+    margin-bottom: 8px;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.vazio p {
+    max-width: 420px;
+    margin-bottom: 18px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.botao-primario {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.botao-primario:hover {
+    background: #1d4ed8;
+}
+
+.observacao {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: white;
+}
+
+.informacao-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .observacao p {
+    margin-top: 12px;
     color: #64748b;
     font-size: 14px;
     line-height: 1.7;
-    margin-top: 12px;
+}
+
+.rodape {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 2px 20px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.rodape strong {
+    color: #17365d;
 }
 
 @media (max-width: 1000px) {
     .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .conteudo {
+        padding: 28px;
+    }
+}
+
+@media (max-width: 750px) {
+    .cards {
         grid-template-columns: 1fr;
+    }
+
+    .topo {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 
@@ -265,10 +473,10 @@ nav a.ativo {
         padding: 0 0 20px;
     }
 
-    .logo h1,
-    .logo span,
-    nav a span,
-    .sair span {
+    .logo-texto,
+    .menu-titulo,
+    nav a > span:last-child,
+    .sair > span:last-child {
         display: none;
     }
 
@@ -283,12 +491,28 @@ nav a.ativo {
         padding: 20px 12px;
     }
 
-    .topo {
-        align-items: flex-start;
-        flex-direction: column;
+    .topo h2 {
+        font-size: 25px;
     }
 
     .painel {
         padding: 18px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .painel-topo {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .barra-info {
+        align-items: flex-start;
+    }
+
+    .rodape {
+        flex-direction: column;
     }
 }

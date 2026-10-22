@@ -33,53 +33,53 @@ $inicial = strtoupper(substr($nome, 0, 1));
 
             <nav>
                 <a href="dashboard.php" class="ativo">
-                    🏠
+                    <span class="icone-menu">⌂</span>
                     <span>Início</span>
                 </a>
 
                 <a href="producao.php">
-                    📋
+                    <span class="icone-menu">▤</span>
                     <span>Produção</span>
                 </a>
 
+                <a href="analises.php">
+                    <span class="icone-menu">▥</span>
+                    <span>Análises</span>
+                </a>
+
                 <a href="planilhas.php">
-                    📁
+                    <span class="icone-menu">▦</span>
                     <span>Planilhas</span>
                 </a>
 
                 <a href="relatorios.php">
-                    📈
+                    <span class="icone-menu">▧</span>
                     <span>Relatórios</span>
                 </a>
 
                 <a href="estoque.php">
-                    📦
+                    <span class="icone-menu">▣</span>
                     <span>Estoque</span>
                 </a>
 
                 <?php if ($tipoAcesso === "Supervisor"): ?>
                     <a href="usuarios.php">
-                        👥
+                        <span class="icone-menu">♙</span>
                         <span>Funcionários</span>
                     </a>
                 <?php endif; ?>
 
                 <a href="perfil.php">
-                    👤
+                    <span class="icone-menu">♙</span>
                     <span>Meu perfil</span>
                 </a>
             </nav>
 
             <a href="index.php" class="sair">
-                🚪
+                <span class="icone-menu">↪</span>
                 <span>Sair</span>
             </a>
-        </aside>        </a>
-
-                <a href="analises.php">
-                    📊
-                    <span>Análises</span>
-        
+        </aside>
 
         <main class="conteudo">
             <header class="topo">
@@ -95,7 +95,8 @@ $inicial = strtoupper(substr($nome, 0, 1));
                     <div class="avatar">
                         <?= htmlspecialchars($inicial, ENT_QUOTES, "UTF-8") ?>
                     </div>
-                    <div>
+
+                    <div class="usuario-info">
                         <strong>
                             <?= htmlspecialchars($nome, ENT_QUOTES, "UTF-8") ?>
                         </strong>
@@ -116,7 +117,7 @@ $inicial = strtoupper(substr($nome, 0, 1));
                 </div>
 
                 <div class="card">
-                    <div class="card-icone">✅</div>
+                    <div class="card-icone">✓</div>
                     <div>
                         <span>Disponíveis</span>
                         <strong>0</strong>
@@ -124,7 +125,7 @@ $inicial = strtoupper(substr($nome, 0, 1));
                 </div>
 
                 <div class="card">
-                    <div class="card-icone">⚠️</div>
+                    <div class="card-icone">⚠</div>
                     <div>
                         <span>Estoque baixo</span>
                         <strong>0</strong>
@@ -132,7 +133,7 @@ $inicial = strtoupper(substr($nome, 0, 1));
                 </div>
 
                 <div class="card">
-                    <div class="card-icone">🔴</div>
+                    <div class="card-icone">!</div>
                     <div>
                         <span>Críticos</span>
                         <strong>0</strong>
@@ -145,8 +146,8 @@ $inicial = strtoupper(substr($nome, 0, 1));
 
                 <div class="acoes-grid">
                     <a href="producao.php" class="acao">
-                        <div class="acao-icone">📋</div>
-                        <div>
+                        <div class="acao-icone">▤</div>
+                        <div class="acao-texto">
                             <strong>Produção</strong>
                             <span>Consultar informações de produção</span>
                         </div>
@@ -154,8 +155,8 @@ $inicial = strtoupper(substr($nome, 0, 1));
                     </a>
 
                     <a href="planilhas.php" class="acao">
-                        <div class="acao-icone">📁</div>
-                        <div>
+                        <div class="acao-icone">▦</div>
+                        <div class="acao-texto">
                             <strong>Planilhas</strong>
                             <span>Consultar planilhas do sistema</span>
                         </div>
@@ -163,8 +164,8 @@ $inicial = strtoupper(substr($nome, 0, 1));
                     </a>
 
                     <a href="analises.php" class="acao">
-                        <div class="acao-icone">📊</div>
-                        <div>
+                        <div class="acao-icone">▥</div>
+                        <div class="acao-texto">
                             <strong>Análises</strong>
                             <span>Visualizar indicadores</span>
                         </div>
@@ -172,8 +173,8 @@ $inicial = strtoupper(substr($nome, 0, 1));
                     </a>
 
                     <a href="relatorios.php" class="acao">
-                        <div class="acao-icone">📈</div>
-                        <div>
+                        <div class="acao-icone">▧</div>
+                        <div class="acao-texto">
                             <strong>Relatórios</strong>
                             <span>Consultar relatórios</span>
                         </div>
@@ -191,7 +192,7 @@ $inicial = strtoupper(substr($nome, 0, 1));
                 </div>
 
                 <div class="atividade-vazia">
-                    <div>📋</div>
+                    <div>▤</div>
                     <strong>Nenhuma atividade registrada</strong>
                     <span>As movimentações aparecerão aqui.</span>
                 </div>
