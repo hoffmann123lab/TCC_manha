@@ -42,11 +42,6 @@ $inicial = strtoupper(substr($nome, 0, 1));
                     <span>Produção</span>
                 </a>
 
-                <a href="analises.php">
-                    📊
-                    <span>Análises</span>
-                </a>
-
                 <a href="planilhas.php">
                     📁
                     <span>Planilhas</span>
@@ -75,11 +70,16 @@ $inicial = strtoupper(substr($nome, 0, 1));
                 </a>
             </nav>
 
-            <a href="logout.php" class="sair">
+            <a href="index.php" class="sair">
                 🚪
                 <span>Sair</span>
             </a>
-        </aside>
+        </aside>        </a>
+
+                <a href="analises.php">
+                    📊
+                    <span>Análises</span>
+        
 
         <main class="conteudo">
             <header class="topo">

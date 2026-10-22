@@ -16,17 +16,25 @@ a {
     color: inherit;
 }
 
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
 .menu {
     width: 250px;
+    min-width: 250px;
     height: 100vh;
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 10;
     background: #17365d;
     color: white;
     padding: 25px 15px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .logo {
@@ -39,6 +47,7 @@ a {
 
 .icone-logo {
     width: 42px;
+    min-width: 42px;
     height: 42px;
     background: white;
     color: #17365d;
@@ -47,10 +56,16 @@ a {
     align-items: center;
     justify-content: center;
     font-size: 25px;
+    flex-shrink: 0;
+}
+
+.logo-texto {
+    min-width: 0;
 }
 
 .logo h1 {
     font-size: 18px;
+    font-weight: 700;
 }
 
 .logo span {
@@ -60,38 +75,68 @@ a {
     opacity: 0.75;
 }
 
-nav {
+.menu nav {
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-top: 30px;
 }
 
-nav a,
-.sair {
+.menu nav a,
+.menu .sair {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
     border-radius: 8px;
+    color: #e2e8f0;
     font-size: 14px;
-    transition: 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 
-nav a:hover,
-nav a.ativo {
+.icone-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    font-size: 20px;
+    line-height: 1;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.menu nav a > span:not(.icone-menu),
+.menu .sair > span:not(.icone-menu) {
+    line-height: 24px;
+}
+
+.menu nav a:hover {
+    background: #ffffff15;
+    color: white;
+}
+
+.menu nav a.ativo {
     background: #2563eb;
+    color: white;
+    box-shadow: inset 3px 0 0 #93c5fd;
 }
 
-.sair {
+.menu .sair {
     margin-top: auto;
 }
 
-.sair:hover {
+.menu .sair:hover {
     background: #ffffff20;
+    color: white;
 }
 
 .conteudo {
+    width: calc(100% - 250px);
+    min-width: 0;
     margin-left: 250px;
     padding: 35px;
 }
@@ -246,20 +291,34 @@ tbody tr:hover {
     font-size: 12px;
 }
 
+@media (max-width: 1100px) {
+    .conteudo {
+        padding: 25px;
+    }
+}
+
 @media (max-width: 900px) {
     .menu {
         width: 210px;
+        min-width: 210px;
     }
 
     .conteudo {
+        width: calc(100% - 210px);
         margin-left: 210px;
-        padding: 25px;
+    }
+}
+
+@media (max-width: 850px) {
+    .resumo {
+        grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 650px) {
     .menu {
         width: 70px;
+        min-width: 70px;
         padding: 20px 8px;
     }
 
@@ -268,20 +327,25 @@ tbody tr:hover {
         padding: 0 0 20px;
     }
 
-    .logo h1,
-    .logo span,
-    nav a span,
-    .sair span {
+    .logo-texto,
+    .menu nav a > span:not(.icone-menu),
+    .menu .sair > span:not(.icone-menu) {
         display: none;
     }
 
-    nav a,
-    .sair {
+    .menu nav {
+        gap: 8px;
+        margin-top: 25px;
+    }
+
+    .menu nav a,
+    .menu .sair {
         justify-content: center;
-        padding: 14px 8px;
+        padding: 11px 8px;
     }
 
     .conteudo {
+        width: calc(100% - 70px);
         margin-left: 70px;
         padding: 20px 12px;
     }
@@ -289,10 +353,6 @@ tbody tr:hover {
     .topo {
         align-items: flex-start;
         flex-direction: column;
-    }
-
-    .resumo {
-        grid-template-columns: 1fr;
     }
 
     .painel {
@@ -321,6 +381,7 @@ tbody tr:hover {
     }
 
     .conteudo {
+        width: 100%;
         margin: 0;
         padding: 0;
     }

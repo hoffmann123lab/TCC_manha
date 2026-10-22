@@ -146,7 +146,7 @@ $resultado = $conn->query(
                 </a>
             </nav>
 
-            <a href="logout.php" class="sair">
+            <a href="index.php" class="sair">
                 🚪
                 <span>Sair</span>
             </a>

@@ -1,6 +1,5 @@
 
 <?php
-
 session_start();
 
 if (!isset($_SESSION["id_fun"])) {
@@ -51,6 +50,9 @@ if ($resultado) {
     }
 }
 
+function escapar($valor) {
+    return htmlspecialchars((string) ($valor ?? ""), ENT_QUOTES, "UTF-8");
+}
 ?>
 
 <!DOCTYPE html>
@@ -66,28 +68,60 @@ if ($resultado) {
         <aside class="menu">
             <div class="logo">
                 <div class="icone-logo">⚙</div>
-                <div>
+                <div class="logo-texto">
                     <h1>SIGEP-EPI</h1>
                     <span>Sistema de Gestão</span>
                 </div>
             </div>
 
             <nav>
-                <a href="dashboard.php">🏠 <span>Início</span></a>
-                <a href="producao.php">📋 <span>Produção</span></a>
-                <a href="analises.php">📊 <span>Análises</span></a>
-                <a href="planilhas.php">📁 <span>Planilhas</span></a>
-                <a href="relatorios.php" class="ativo">📈 <span>Relatórios</span></a>
-                <a href="estoque.php">📦 <span>Estoque</span></a>
+                <a href="dashboard.php">
+                    <span class="icone-menu">⌂</span>
+                    <span>Início</span>
+                </a>
+
+                <a href="producao.php">
+                    <span class="icone-menu">▤</span>
+                    <span>Produção</span>
+                </a>
+
+                <a href="analises.php">
+                    <span class="icone-menu">▥</span>
+                    <span>Análises</span>
+                </a>
+
+                <a href="planilhas.php">
+                    <span class="icone-menu">▦</span>
+                    <span>Planilhas</span>
+                </a>
+
+                <a href="relatorios.php" class="ativo">
+                    <span class="icone-menu">▧</span>
+                    <span>Relatórios</span>
+                </a>
+
+                <a href="estoque.php">
+                    <span class="icone-menu">▣</span>
+                    <span>Estoque</span>
+                </a>
 
                 <?php if ($tipoAcesso === "Supervisor"): ?>
-                    <a href="usuarios.php">👥 <span>Funcionários</span></a>
+                    <a href="usuarios.php">
+                        <span class="icone-menu">♙</span>
+                        <span>Funcionários</span>
+                    </a>
                 <?php endif; ?>
 
-                <a href="perfil.php">👤 <span>Meu perfil</span></a>
+                <a href="perfil.php">
+                    <span class="icone-menu">⚙</span>
+                    <span>Meu perfil</span>
+                </a>
             </nav>
 
-            <a href="logout.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="index.php" class="sair">
+                <span class="icone-menu">↪</span>
+                <span>Sair</span>
+            </a>
         </aside>
 
         <main class="conteudo">
@@ -98,7 +132,11 @@ if ($resultado) {
                     <p>Consulte os registros e imprima os dados do sistema.</p>
                 </div>
 
-                <button type="button" class="botao-imprimir" onclick="window.print()">
+                <button
+                    type="button"
+                    class="botao-imprimir"
+                    onclick="window.print()"
+                >
                     Imprimir relatório
                 </button>
             </header>
@@ -117,10 +155,8 @@ if ($resultado) {
 
             <section class="painel">
                 <div class="titulo-painel">
-                    <div>
-                        <h3>Relatório de registros</h3>
-                        <p>Dados consultados diretamente no banco de dados.</p>
-                    </div>
+                    <h3>Relatório de registros</h3>
+                    <p>Dados consultados diretamente no banco de dados.</p>
                 </div>
 
                 <form method="GET" action="relatorios.php" class="pesquisa">
@@ -128,8 +164,9 @@ if ($resultado) {
                         type="search"
                         name="pesquisa"
                         placeholder="Pesquisar produto, setor ou colaborador..."
-                        value="<?= htmlspecialchars($pesquisa, ENT_QUOTES, "UTF-8") ?>"
+                        value="<?= escapar($pesquisa) ?>"
                     >
+
                     <button type="submit">Pesquisar</button>
 
                     <?php if ($pesquisa !== ""): ?>
@@ -154,21 +191,22 @@ if ($resultado) {
                                 <th>Saída</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <?php if (count($registros) > 0): ?>
                                 <?php foreach ($registros as $linha): ?>
                                     <tr>
                                         <td><?= (int) $linha["id_plan"] ?></td>
-                                        <td><?= htmlspecialchars($linha["nome_plan"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["produto"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["descricao"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["tipo"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
+                                        <td><?= escapar($linha["nome_plan"]) ?></td>
+                                        <td><?= escapar($linha["produto"]) ?></td>
+                                        <td><?= escapar($linha["descricao"]) ?></td>
+                                        <td><?= escapar($linha["tipo"]) ?></td>
                                         <td><?= (int) ($linha["quantidade"] ?? 0) ?></td>
-                                        <td><?= htmlspecialchars($linha["uni_med"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["colaborador"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["setor"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["entrada"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["saida"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
+                                        <td><?= escapar($linha["uni_med"]) ?></td>
+                                        <td><?= escapar($linha["colaborador"]) ?></td>
+                                        <td><?= escapar($linha["setor"]) ?></td>
+                                        <td><?= escapar($linha["entrada"]) ?></td>
+                                        <td><?= escapar($linha["saida"]) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>

@@ -1,30 +1,33 @@
+
 <?php
 
 session_start();
 
 require "connection.php";
 
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    header("Location: index.php");
+    exit;
+}
+
 $email = trim($_POST["email"] ?? "");
 $senha = $_POST["senha"] ?? "";
 
 if ($email === "" || $senha === "") {
-
-    header("Location: index.php?erro=" . urlencode("Preencha todos os campos."));
+    header("Location: index.php?erro=" . urlencode("Preencha o e-mail e a senha."));
     exit;
-
 }
 
 $stmt = $conn->prepare(
     "SELECT id_fun, nome_fun, email, senha, tipo
-     FROM funcionario
-     WHERE email = ?"
+    FROM funcionario
+    WHERE email = ?
+    LIMIT 1"
 );
 
 if (!$stmt) {
-
-    header("Location: index.php?erro=" . urlencode("Erro ao acessar o banco de dados."));
+    header("Location: index.php?erro=" . urlencode("Erro ao processar o login."));
     exit;
-
 }
 
 $stmt->bind_param("s", $email);
@@ -32,30 +35,29 @@ $stmt->execute();
 
 $resultado = $stmt->get_result();
 
-if ($resultado->num_rows === 0) {
+if ($resultado->num_rows === 1) {
+    $usuario = $resultado->fetch_assoc();
 
-    header("Location: index.php?erro=" . urlencode("E-mail não encontrado."));
-    exit;
+    if (password_verify($senha, $usuario["senha"])) {
+        session_regenerate_id(true);
 
+        $_SESSION["id_fun"] = (int) $usuario["id_fun"];
+        $_SESSION["nome_fun"] = $usuario["nome_fun"];
+        $_SESSION["email"] = $usuario["email"];
+        $_SESSION["tipo"] = $usuario["tipo"];
+
+        $stmt->close();
+        $conn->close();
+
+        header("Location: dashboard.php");
+        exit;
+    }
 }
-
-$dados = $resultado->fetch_assoc();
-
-if (!password_verify($senha, $dados["senha"])) {
-
-    header("Location: index.php?erro=" . urlencode("Senha incorreta."));
-    exit;
-
-}
-
-$_SESSION["id_fun"] = $dados["id_fun"];
-$_SESSION["nome_fun"] = $dados["nome_fun"];
-$_SESSION["email"] = $dados["email"];
-$_SESSION["tipo"] = $dados["tipo"];
 
 $stmt->close();
+$conn->close();
 
-header("Location: dashboard.php");
+header("Location: index.php?erro=" . urlencode("E-mail ou senha incorretos."));
 exit;
 
 ?>

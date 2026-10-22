@@ -39,3 +39,13 @@ VALUES
     ('Operador'),
     ('Supervisor');
 
+USE sigep_epi;
+
+INSERT INTO cargo (nome_cargo)
+SELECT 'Supervisor'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM cargo
+    WHERE nome_cargo = 'Supervisor'
+);
+

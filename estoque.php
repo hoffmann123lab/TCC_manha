@@ -1,5 +1,6 @@
 
 <?php
+
 session_start();
 
 if (!isset($_SESSION["id_fun"])) {
@@ -28,6 +29,7 @@ if ($resultado) {
     while ($linha = $resultado->fetch_assoc()) {
         $itens[] = $linha;
         $totalItens++;
+
         $quantidade = (int) ($linha["quantidade_total"] ?? 0);
         $totalUnidades += $quantidade;
 
@@ -45,6 +47,7 @@ if ($pesquisa !== "") {
             || stripos($item["setor"] ?? "", $pesquisa) !== false;
     }));
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -60,28 +63,61 @@ if ($pesquisa !== "") {
         <aside class="menu">
             <div class="logo">
                 <div class="icone-logo">⚙</div>
-                <div>
+
+                <div class="logo-texto">
                     <h1>SIGEP-EPI</h1>
                     <span>Sistema de Gestão</span>
                 </div>
             </div>
 
             <nav>
-                <a href="dashboard.php">🏠 <span>Início</span></a>
-                <a href="producao.php">📋 <span>Produção</span></a>
-                <a href="analises.php">📊 <span>Análises</span></a>
-                <a href="planilhas.php">📁 <span>Planilhas</span></a>
-                <a href="relatorios.php">📈 <span>Relatórios</span></a>
-                <a href="estoque.php" class="ativo">📦 <span>Estoque</span></a>
+                <a href="dashboard.php">
+                    <span class="icone-menu">⌂</span>
+                    <span>Início</span>
+                </a>
+
+                <a href="producao.php">
+                    <span class="icone-menu">▤</span>
+                    <span>Produção</span>
+                </a>
+
+                <a href="analises.php">
+                    <span class="icone-menu">▥</span>
+                    <span>Análises</span>
+                </a>
+
+                <a href="planilhas.php">
+                    <span class="icone-menu">▦</span>
+                    <span>Planilhas</span>
+                </a>
+
+                <a href="relatorios.php">
+                    <span class="icone-menu">▧</span>
+                    <span>Relatórios</span>
+                </a>
+
+                <a href="estoque.php" class="ativo">
+                    <span class="icone-menu">▣</span>
+                    <span>Estoque</span>
+                </a>
 
                 <?php if ($tipoAcesso === "Supervisor"): ?>
-                    <a href="usuarios.php">👥 <span>Funcionários</span></a>
+                    <a href="usuarios.php">
+                        <span class="icone-menu">♙</span>
+                        <span>Funcionários</span>
+                    </a>
                 <?php endif; ?>
 
-                <a href="perfil.php">👤 <span>Meu perfil</span></a>
+                <a href="perfil.php">
+                    <span class="icone-menu">⚙</span>
+                    <span>Meu perfil</span>
+                </a>
             </nav>
 
-            <a href="logout.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="index.php" class="sair">
+                <span class="icone-menu">↪</span>
+                <span>Sair</span>
+            </a>
         </aside>
 
         <main class="conteudo">
@@ -95,16 +131,19 @@ if ($pesquisa !== "") {
 
             <section class="resumo">
                 <article class="card">
+                    <div class="card-icone">▣</div>
                     <span>Produtos agrupados</span>
                     <strong><?= $totalItens ?></strong>
                 </article>
 
                 <article class="card">
+                    <div class="card-icone">▤</div>
                     <span>Total de unidades registradas</span>
                     <strong><?= $totalUnidades ?></strong>
                 </article>
 
                 <article class="card">
+                    <div class="card-icone alerta">!</div>
                     <span>Registros com quantidade baixa</span>
                     <strong><?= $itensBaixos ?></strong>
                 </article>
@@ -112,8 +151,10 @@ if ($pesquisa !== "") {
 
             <section class="painel">
                 <div class="titulo-painel">
-                    <h3>Produtos em estoque</h3>
-                    <p>Os itens são agrupados por produto, setor e unidade de medida.</p>
+                    <div>
+                        <h3>Produtos em estoque</h3>
+                        <p>Os itens são agrupados por produto, setor e unidade de medida.</p>
+                    </div>
                 </div>
 
                 <form method="GET" action="estoque.php" class="pesquisa">
@@ -123,10 +164,11 @@ if ($pesquisa !== "") {
                         placeholder="Pesquisar produto ou setor..."
                         value="<?= htmlspecialchars($pesquisa, ENT_QUOTES, "UTF-8") ?>"
                     >
+
                     <button type="submit">Pesquisar</button>
 
                     <?php if ($pesquisa !== ""): ?>
-                        <a href="estoque.php">Limpar</a>
+                        <a href="estoque.php" class="limpar">Limpar</a>
                     <?php endif; ?>
                 </form>
 
@@ -141,15 +183,29 @@ if ($pesquisa !== "") {
                                 <th>Situação</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <?php if (count($itens) > 0): ?>
                                 <?php foreach ($itens as $item): ?>
                                     <?php $quantidade = (int) ($item["quantidade_total"] ?? 0); ?>
+
                                     <tr>
-                                        <td><?= htmlspecialchars($item["produto"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($item["setor"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($item["uni_med"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= $quantidade ?></td>
+                                        <td class="produto">
+                                            <?= htmlspecialchars($item["produto"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                        </td>
+
+                                        <td>
+                                            <?= htmlspecialchars($item["setor"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                        </td>
+
+                                        <td>
+                                            <?= htmlspecialchars($item["uni_med"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                        </td>
+
+                                        <td>
+                                            <strong><?= $quantidade ?></strong>
+                                        </td>
+
                                         <td>
                                             <?php if ($quantidade <= 5): ?>
                                                 <span class="status baixo">Quantidade baixa</span>
@@ -162,7 +218,9 @@ if ($pesquisa !== "") {
                             <?php else: ?>
                                 <tr>
                                     <td colspan="5" class="vazio">
-                                        Nenhum produto encontrado.
+                                        <div class="vazio-icone">▣</div>
+                                        <strong>Nenhum produto encontrado</strong>
+                                        <p>Experimente pesquisar por outro produto ou setor.</p>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -170,7 +228,16 @@ if ($pesquisa !== "") {
                     </table>
                 </div>
             </section>
+
+            <footer class="rodape">
+                <span>SIGEP-EPI</span>
+                <span>Sistema de Gestão de EPI's</span>
+            </footer>
         </main>
     </div>
 </body>
 </html>
+
+<?php
+$conn->close();
+?>

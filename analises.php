@@ -84,7 +84,7 @@ foreach ($quantidadesPorSetor as $setor) {
                 <a href="perfil.php">👤 <span>Meu perfil</span></a>
             </nav>
 
-            <a href="logout.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="index.php" class="sair">🚪 <span>Sair</span></a>
         </aside>
 
         <main class="conteudo">

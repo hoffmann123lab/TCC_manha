@@ -1,6 +1,5 @@
 
 <?php
-
 session_start();
 
 if (!isset($_SESSION["id_fun"])) {
@@ -39,6 +38,17 @@ if ($pesquisa !== "") {
     );
 }
 
+$registros = [];
+
+if ($resultado) {
+    while ($linha = $resultado->fetch_assoc()) {
+        $registros[] = $linha;
+    }
+}
+
+function escapar($valor) {
+    return htmlspecialchars((string) ($valor ?? ""), ENT_QUOTES, "UTF-8");
+}
 ?>
 
 <!DOCTYPE html>
@@ -54,28 +64,60 @@ if ($pesquisa !== "") {
         <aside class="menu">
             <div class="logo">
                 <div class="icone-logo">⚙</div>
-                <div>
+                <div class="logo-texto">
                     <h1>SIGEP-EPI</h1>
                     <span>Sistema de Gestão</span>
                 </div>
             </div>
 
             <nav>
-                <a href="dashboard.php">🏠 <span>Início</span></a>
-                <a href="producao.php">📋 <span>Produção</span></a>
-                <a href="analises.php">📊 <span>Análises</span></a>
-                <a href="planilhas.php" class="ativo">📁 <span>Planilhas</span></a>
-                <a href="relatorios.php">📈 <span>Relatórios</span></a>
-                <a href="estoque.php">📦 <span>Estoque</span></a>
+                <a href="dashboard.php">
+                    <span class="icone-menu">⌂</span>
+                    <span>Início</span>
+                </a>
+
+                <a href="producao.php">
+                    <span class="icone-menu">▤</span>
+                    <span>Produção</span>
+                </a>
+
+                <a href="analises.php">
+                    <span class="icone-menu">▥</span>
+                    <span>Análises</span>
+                </a>
+
+                <a href="planilhas.php" class="ativo">
+                    <span class="icone-menu">▦</span>
+                    <span>Planilhas</span>
+                </a>
+
+                <a href="relatorios.php">
+                    <span class="icone-menu">▧</span>
+                    <span>Relatórios</span>
+                </a>
+
+                <a href="estoque.php">
+                    <span class="icone-menu">▣</span>
+                    <span>Estoque</span>
+                </a>
 
                 <?php if ($tipoAcesso === "Supervisor"): ?>
-                    <a href="usuarios.php">👥 <span>Funcionários</span></a>
+                    <a href="usuarios.php">
+                        <span class="icone-menu">♙</span>
+                        <span>Funcionários</span>
+                    </a>
                 <?php endif; ?>
 
-                <a href="perfil.php">👤 <span>Meu perfil</span></a>
+                <a href="perfil.php">
+                    <span class="icone-menu">⚙</span>
+                    <span>Meu perfil</span>
+                </a>
             </nav>
 
-            <a href="logout.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="index.php" class="sair">
+                <span class="icone-menu">↪</span>
+                <span>Sair</span>
+            </a>
         </aside>
 
         <main class="conteudo">
@@ -86,24 +128,56 @@ if ($pesquisa !== "") {
                     <p>Consulte e pesquise os registros armazenados no sistema.</p>
                 </div>
 
-                <a href="producao.php" class="botao-novo">+ Novo registro</a>
+                <a href="producao.php" class="botao-novo">
+                    <span class="mais">+</span>
+                    Novo registro
+                </a>
             </header>
+
+            <section class="indicadores">
+                <article class="indicador">
+                    <div class="indicador-icone">▦</div>
+                    <div>
+                        <span>Registros encontrados</span>
+                        <strong><?= count($registros) ?></strong>
+                    </div>
+                </article>
+
+                <article class="indicador">
+                    <div class="indicador-icone azul">⌕</div>
+                    <div>
+                        <span>Pesquisa atual</span>
+                        <strong class="texto-pesquisa">
+                            <?= $pesquisa !== "" ? "Filtrada" : "Todos os registros" ?>
+                        </strong>
+                    </div>
+                </article>
+            </section>
 
             <section class="painel">
                 <div class="painel-topo">
                     <div>
                         <h3>Planilhas cadastradas</h3>
-                        <p>Registros encontrados no banco de dados.</p>
+                        <p>Visualize os registros armazenados no sistema.</p>
                     </div>
+
+                    <span class="contador">
+                        <?= count($registros) ?>
+                        <?= count($registros) === 1 ? "registro" : "registros" ?>
+                    </span>
                 </div>
 
                 <form method="GET" action="planilhas.php" class="pesquisa">
-                    <input
-                        type="search"
-                        name="pesquisa"
-                        placeholder="Pesquisar por nome, produto, descrição ou setor..."
-                        value="<?= htmlspecialchars($pesquisa, ENT_QUOTES, "UTF-8") ?>"
-                    >
+                    <div class="campo-pesquisa">
+                        <span class="icone-pesquisa">⌕</span>
+                        <input
+                            type="search"
+                            name="pesquisa"
+                            placeholder="Pesquisar nome, produto, descrição ou setor..."
+                            value="<?= escapar($pesquisa) ?>"
+                        >
+                    </div>
+
                     <button type="submit">Pesquisar</button>
 
                     <?php if ($pesquisa !== ""): ?>
@@ -126,30 +200,63 @@ if ($pesquisa !== "") {
                                 <th>Saída</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            <?php if ($resultado && $resultado->num_rows > 0): ?>
-                                <?php while ($linha = $resultado->fetch_assoc()): ?>
+                            <?php if (count($registros) > 0): ?>
+                                <?php foreach ($registros as $linha): ?>
                                     <tr>
-                                        <td><?= (int) $linha["id_plan"] ?></td>
-                                        <td><?= htmlspecialchars($linha["nome_plan"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["produto"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["tipo"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars((string) ($linha["quantidade"] ?? ""), ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["uni_med"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["setor"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["entrada"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["saida"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
+                                        <td>
+                                            <span class="id-registro">
+                                                #<?= (int) $linha["id_plan"] ?>
+                                            </span>
+                                        </td>
+                                        <td class="nome-planilha">
+                                            <?= escapar($linha["nome_plan"]) ?>
+                                        </td>
+                                        <td><?= escapar($linha["produto"]) ?></td>
+                                        <td>
+                                            <?php if (!empty($linha["tipo"])): ?>
+                                                <span class="etiqueta">
+                                                    <?= escapar($linha["tipo"]) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="sem-dado">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="quantidade">
+                                            <?= escapar($linha["quantidade"]) ?>
+                                        </td>
+                                        <td><?= escapar($linha["uni_med"]) ?></td>
+                                        <td><?= escapar($linha["setor"]) ?></td>
+                                        <td><?= escapar($linha["entrada"]) ?></td>
+                                        <td><?= escapar($linha["saida"]) ?></td>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
                                     <td colspan="9" class="vazio">
-                                        Nenhuma planilha encontrada.
+                                        <div class="vazio-icone">▦</div>
+                                        <strong>Nenhum registro encontrado</strong>
+                                        <p>
+                                            <?php if ($pesquisa !== ""): ?>
+                                                Tente pesquisar usando outro termo.
+                                            <?php else: ?>
+                                                Os registros cadastrados aparecerão aqui.
+                                            <?php endif; ?>
+                                        </p>
                                     </td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="rodape-tabela">
+                    <span>
+                        Exibindo <?= count($registros) ?>
+                        <?= count($registros) === 1 ? "registro" : "registros" ?>
+                    </span>
+                    <span>SIGEP-EPI · Gestão de dados</span>
                 </div>
             </section>
         </main>
