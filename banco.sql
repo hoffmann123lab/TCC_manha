@@ -28,6 +28,8 @@ CREATE TABLE planilhas (
     setor VARCHAR(100),
     nome_plan VARCHAR(150) NOT NULL,
     produto VARCHAR(150),
+    cor VARCHAR(50),
+    tamanho VARCHAR(50),
     quantidade INT,
     entrada DATETIME,
     saida DATETIME,

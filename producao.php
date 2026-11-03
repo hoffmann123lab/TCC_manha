@@ -1,86 +1,240 @@
-
 <?php
 session_start();
+require "connection.php";
 
 if (!isset($_SESSION["id_fun"])) {
     header("Location: index.php");
     exit;
 }
 
-require "connection.php";
+$mensagem = "";
+$erros = [];
+$dadosVerificados = false;
+$token = "";
 
-$tipoAcesso = $_SESSION["tipo"] ?? "Operador";
-$idFuncionario = (int) $_SESSION["id_fun"];
-
-$erro = "";
-$sucesso = "";
+$colunasEsperadas = [
+    "produto",
+    "descricao",
+    "tipo",
+    "cor",
+    "tamanho",
+    "unidade",
+    "quantidade",
+    "setor",
+    "colaborador"
+];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $descricao = trim($_POST["descricao"] ?? "");
-    $tipo = trim($_POST["tipo"] ?? "");
-    $unidade = trim($_POST["unidade"] ?? "");
-    $colaborador = trim($_POST["colaborador"] ?? "");
-    $setor = trim($_POST["setor"] ?? "");
-    $produto = trim($_POST["produto"] ?? "");
-    $quantidade = $_POST["quantidade"] ?? "";
+    $acao = $_POST["acao"] ?? "";
 
-    if (
-        $descricao === "" ||
-        $tipo === "" ||
-        $unidade === "" ||
-        $colaborador === "" ||
-        $setor === "" ||
-        $produto === "" ||
-        $quantidade === ""
-    ) {
-        $erro = "Preencha todos os campos.";
-    } elseif (
-        filter_var($quantidade, FILTER_VALIDATE_INT) === false ||
-        (int) $quantidade < 0
-    ) {
-        $erro = "Informe uma quantidade válida.";
-    } else {
-        $nomePlanilha = "Registro de produção";
-        $quantidade = (int) $quantidade;
+    if ($acao === "verificar") {
+        unset($_SESSION["importacao_csv"]);
 
-        $stmt = $conn->prepare(
-            "INSERT INTO planilhas
-            (idFuncionario, descricao, tipo, uni_med, colaborador, setor, nome_plan, produto, quantidade, entrada)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
-        );
-
-        if (!$stmt) {
-            $erro = "Não foi possível preparar o cadastro.";
+        if (!isset($_FILES["arquivo"]) || $_FILES["arquivo"]["error"] !== UPLOAD_ERR_OK) {
+            $erros[] = "Selecione um arquivo CSV válido.";
         } else {
-            $stmt->bind_param(
-                "isssssssi",
-                $idFuncionario,
-                $descricao,
-                $tipo,
-                $unidade,
-                $colaborador,
-                $setor,
-                $nomePlanilha,
-                $produto,
-                $quantidade
-            );
+            $arquivo = $_FILES["arquivo"];
 
-            if ($stmt->execute()) {
-                $sucesso = "Registro de produção cadastrado com sucesso.";
-            } else {
-                $erro = "Não foi possível cadastrar o registro.";
+            if (strtolower(pathinfo($arquivo["name"], PATHINFO_EXTENSION)) !== "csv") {
+                $erros[] = "O arquivo precisa estar no formato CSV.";
             }
 
-            $stmt->close();
+            if ($arquivo["size"] > 10 * 1024 * 1024) {
+                $erros[] = "O arquivo não pode ultrapassar 10 MB.";
+            }
+
+            if (empty($erros)) {
+                $handle = fopen($arquivo["tmp_name"], "r");
+
+                if (!$handle) {
+                    $erros[] = "Não foi possível ler o arquivo.";
+                } else {
+                    $primeiraLinha = fgets($handle);
+                    rewind($handle);
+
+                    $separador = substr_count($primeiraLinha, ";") >= substr_count($primeiraLinha, ",") ? ";" : ",";
+
+                    $cabecalho = fgetcsv($handle, 0, $separador, '"', "\\");
+
+                    if (!$cabecalho) {
+                        $erros[] = "A planilha está vazia.";
+                    } else {
+                        $cabecalho[0] = preg_replace('/^\xEF\xBB\xBF/', '', $cabecalho[0]);
+                        $cabecalho = array_map("trim", $cabecalho);
+
+                        if ($cabecalho !== $colunasEsperadas) {
+                            $erros[] = "Os campos da planilha estão incorretos ou fora da ordem esperada.";
+                            $erros[] = "Cabeçalhos esperados: " . implode(", ", $colunasEsperadas);
+                        }
+                    }
+
+                    $linhasValidas = [];
+                    $numeroLinha = 1;
+
+                    if (empty($erros)) {
+                        while (($linha = fgetcsv($handle, 0, $separador, '"', "\\")) !== false) {
+                            $numeroLinha++;
+
+                            if ($linha === [null] || $linha === []) {
+                                continue;
+                            }
+
+                            if (count(array_filter($linha, function ($valor) {
+                                return trim((string)$valor) !== "";
+                            })) === 0) {
+                                continue;
+                            }
+
+                            if (count($linha) !== count($colunasEsperadas)) {
+                                $erros[] = "Linha $numeroLinha: quantidade de colunas incorreta.";
+                                continue;
+                            }
+
+                            $linha = array_map(function ($valor) {
+                                return trim((string)$valor);
+                            }, $linha);
+
+                            $registro = array_combine($colunasEsperadas, $linha);
+
+                            $camposObrigatorios = [
+                                "produto",
+                                "descricao",
+                                "tipo",
+                                "unidade",
+                                "quantidade",
+                                "setor",
+                                "colaborador"
+                            ];
+
+                            foreach ($camposObrigatorios as $campo) {
+                                if ($registro[$campo] === "") {
+                                    $erros[] = "Linha $numeroLinha: o campo '$campo' está vazio.";
+                                }
+                            }
+
+                            if (
+                                $registro["quantidade"] !== "" &&
+                                (!ctype_digit($registro["quantidade"]))
+                            ) {
+                                $erros[] = "Linha $numeroLinha: a quantidade deve ser um número inteiro igual ou maior que zero.";
+                            }
+
+                            if (
+                                $registro["quantidade"] !== "" &&
+                                ctype_digit($registro["quantidade"]) &&
+                                (int)$registro["quantidade"] > 2147483647
+                            ) {
+                                $erros[] = "Linha $numeroLinha: a quantidade ultrapassa o limite permitido.";
+                            }
+
+                            $linhasValidas[] = $registro;
+                        }
+
+                        if (empty($linhasValidas) && empty($erros)) {
+                            $erros[] = "A planilha não possui registros para importar.";
+                        }
+                    }
+
+                    fclose($handle);
+
+                    if (empty($erros)) {
+                        $token = bin2hex(random_bytes(16));
+
+                        $_SESSION["importacao_csv"] = [
+                            "token" => $token,
+                            "arquivo" => basename($arquivo["name"]),
+                            "linhas" => $linhasValidas
+                        ];
+
+                        $dadosVerificados = true;
+                        $mensagem = "Verificação concluída! Todos os campos estão preenchidos corretamente.";
+                    }
+                }
+            }
+        }
+    }
+
+    if ($acao === "importar") {
+        $tokenRecebido = $_POST["token"] ?? "";
+        $importacao = $_SESSION["importacao_csv"] ?? null;
+
+        if (
+            !$importacao ||
+            !isset($importacao["token"]) ||
+            !hash_equals($importacao["token"], $tokenRecebido)
+        ) {
+            $erros[] = "A verificação expirou. Selecione o arquivo novamente.";
+            unset($_SESSION["importacao_csv"]);
+        } else {
+            $idFuncionario = (int)$_SESSION["id_fun"];
+            $nomeArquivo = $importacao["arquivo"];
+            $linhas = $importacao["linhas"];
+
+            try {
+                $conn->begin_transaction();
+
+                $sql = "INSERT INTO planilhas
+                    (idFuncionario, descricao, tipo, uni_med, colaborador, setor, nome_plan, produto, cor, tamanho, quantidade, entrada)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
+                $stmt = $conn->prepare($sql);
+
+                if (!$stmt) {
+                    throw new Exception("Erro ao preparar a importação.");
+                }
+
+                foreach ($linhas as $registro) {
+                    $descricao = $registro["descricao"];
+                    $tipo = $registro["tipo"];
+                    $unidade = $registro["unidade"];
+                    $colaborador = $registro["colaborador"];
+                    $setor = $registro["setor"];
+                    $produto = $registro["produto"];
+                    $cor = $registro["cor"];
+                    $tamanho = $registro["tamanho"];
+                    $quantidade = (int)$registro["quantidade"];
+
+                    $stmt->bind_param(
+                        "isssssssssi",
+                        $idFuncionario,
+                        $descricao,
+                        $tipo,
+                        $unidade,
+                        $colaborador,
+                        $setor,
+                        $nomeArquivo,
+                        $produto,
+                        $cor,
+                        $tamanho,
+                        $quantidade
+                    );
+
+                    if (!$stmt->execute()) {
+                        throw new Exception("Erro ao importar um dos registros.");
+                    }
+                }
+
+                $stmt->close();
+                $conn->commit();
+
+                unset($_SESSION["importacao_csv"]);
+
+                $mensagem = count($linhas) . " registros foram importados com sucesso!";
+            } catch (Exception $e) {
+                $conn->rollback();
+                $erros[] = "Não foi possível concluir a importação. Verifique os dados e tente novamente.";
+            }
         }
     }
 }
 
-$resultado = $conn->query(
-    "SELECT id_plan, descricao, tipo, uni_med, colaborador, setor, produto, quantidade, entrada
-    FROM planilhas
-    ORDER BY id_plan DESC"
-);
+if (isset($_SESSION["importacao_csv"]) && $_SERVER["REQUEST_METHOD"] !== "POST") {
+    unset($_SESSION["importacao_csv"]);
+}
+
+$sqlPlanilhas = "SELECT * FROM planilhas ORDER BY id_plan DESC";
+$resultadoPlanilhas = $conn->query($sqlPlanilhas);
+
 ?>
 
 <!DOCTYPE html>
@@ -92,177 +246,185 @@ $resultado = $conn->query(
     <link rel="stylesheet" href="producao.css">
 </head>
 <body>
-    <div class="dashboard">
-        <aside class="menu">
-            <div class="logo">
-                <div class="icone-logo">⚙</div>
-                <div>
-                    <h1>SIGEP-EPI</h1>
-                    <span>Sistema de Gestão</span>
-                </div>
+
+<div class="dashboard">
+    <aside class="menu">
+        <div class="logo">
+            <div class="icone-logo">⚙</div>
+            <div class="logo-texto">
+                <h1>SIGEP-EPI</h1>
+                <span>Sistema de Gestão</span>
             </div>
+        </div>
 
-            <nav>
-                <a href="dashboard.php">
-                    <span class="icone-menu">⌂</span>
-                    <span>Início</span>
-                </a>
+        <nav>
+            <a href="dashboard.php"><span class="icone-menu">⌂</span><span>Início</span></a>
+            <a href="producao.php" class="ativo"><span class="icone-menu">▤</span><span>Produção</span></a>
+            <a href="analises.php"><span class="icone-menu">▥</span><span>Análises</span></a>
+            <a href="planilhas.php"><span class="icone-menu">▦</span><span>Planilhas</span></a>
+            <a href="relatorios.php"><span class="icone-menu">▧</span><span>Relatórios</span></a>
+            <a href="estoque.php"><span class="icone-menu">▣</span><span>Estoque</span></a>
 
-                <a href="producao.php" class="ativo">
-                    <span class="icone-menu">▤</span>
-                    <span>Produção</span>
-                </a>
-
-                <a href="analises.php">
-                    <span class="icone-menu">▥</span>
-                    <span>Análises</span>
-                </a>
-
-                <a href="planilhas.php">
-                    <span class="icone-menu">▦</span>
-                    <span>Planilhas</span>
-                </a>
-
-                <a href="relatorios.php">
-                    <span class="icone-menu">▧</span>
-                    <span>Relatórios</span>
-                </a>
-
-                <a href="estoque.php">
-                    <span class="icone-menu">▣</span>
-                    <span>Estoque</span>
-                </a>
-
-                <?php if ($tipoAcesso === "Supervisor"): ?>
-                    <a href="usuarios.php">
-                        <span class="icone-menu">♙</span>
-                        <span>Funcionários</span>
-                    </a>
-                <?php endif; ?>
-
-                <a href="perfil.php">
-                    <span class="icone-menu">♙</span>
-                    <span>Meu perfil</span>
-                </a>
-            </nav>
-
-            <a href="index.php" class="sair">
-                <span class="icone-menu">↪</span>
-                <span>Sair</span>
-            </a>
-        </aside>
-
-        <main class="conteudo">
-            <header class="topo">
-                <div>
-                    <span class="subtitulo">GERENCIAMENTO</span>
-                    <h2>Produção</h2>
-                    <p>Cadastre e consulte os registros de produção.</p>
-                </div>
-            </header>
-
-            <?php if ($erro !== ""): ?>
-                <div class="mensagem erro" role="alert">
-                    <?= htmlspecialchars($erro, ENT_QUOTES, "UTF-8") ?>
-                </div>
+            <?php if (($_SESSION["tipo"] ?? "") === "Supervisor"): ?>
+                <a href="usuarios.php"><span class="icone-menu">♙</span><span>Funcionários</span></a>
             <?php endif; ?>
 
-            <?php if ($sucesso !== ""): ?>
-                <div class="mensagem sucesso" role="alert">
-                    <?= htmlspecialchars($sucesso, ENT_QUOTES, "UTF-8") ?>
-                </div>
+            <a href="perfil.php"><span class="icone-menu">⚙</span><span>Meu perfil</span></a>
+        </nav>
+
+        <a href="index.php" class="sair"><span class="icone-menu">↪</span><span>Sair</span></a>
+    </aside>
+
+    <main class="conteudo">
+    <header class="cabecalho">
+        <div>
+            <h1>Importação de produção</h1>
+            <p>Verifique os dados da planilha antes de importar para o sistema.</p>
+        </div>
+    </header>
+
+    <?php if ($mensagem !== ""): ?>
+        <div class="mensagem sucesso">
+            <?= htmlspecialchars($mensagem) ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($erros)): ?>
+        <div class="mensagem erro">
+            <strong>Não foi possível aprovar a planilha:</strong>
+            <ul>
+                <?php foreach (array_slice($erros, 0, 30) as $erro): ?>
+                    <li><?= htmlspecialchars($erro) ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+            <?php if (count($erros) > 30): ?>
+                <p>Existem mais <?= count($erros) - 30 ?> erros não exibidos.</p>
             <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
-            <section class="painel">
-                <h3>
-                    <span class="icone-titulo">＋</span>
-                    Novo registro
-                </h3>
+    <section class="painel">
+        <h2>Selecionar planilha CSV</h2>
 
-                <form method="POST" action="producao.php">
-                    <div class="form-grid">
-                        <div class="campo">
-                            <label for="descricao">Descrição</label>
-                            <input type="text" id="descricao" name="descricao" required>
-                        </div>
+        <p class="descricao">
+            Selecione seu arquivo CSV. O sistema verificará os campos e os dados antes de permitir a importação.
+        </p>
 
-                        <div class="campo">
-                            <label for="tipo">Tipo</label>
-                            <input type="text" id="tipo" name="tipo" required>
-                        </div>
+        <form method="POST" enctype="multipart/form-data" class="formulario">
+            <label for="arquivo">Arquivo da planilha</label>
+            <input
+                type="file"
+                name="arquivo"
+                id="arquivo"
+                accept=".csv"
+                required
+                <?= $dadosVerificados ? "disabled" : "" ?>
+            >
 
-                        <div class="campo">
-                            <label for="unidade">Unidade de medida</label>
-                            <input type="text" id="unidade" name="unidade" placeholder="Ex.: unidade" required>
-                        </div>
+            <p class="ajuda">Formato aceito: CSV. Tamanho máximo: 10 MB.</p>
 
-                        <div class="campo">
-                            <label for="colaborador">Colaborador</label>
-                            <input type="text" id="colaborador" name="colaborador" required>
-                        </div>
+            <button type="submit" name="acao" value="verificar" <?= $dadosVerificados ? "disabled" : "" ?>>
+                Verificar planilha
+            </button>
+        </form>
 
-                        <div class="campo">
-                            <label for="setor">Setor</label>
-                            <input type="text" id="setor" name="setor" required>
-                        </div>
+        <div class="campos">
+            <h3>Campos obrigatórios e opcionais</h3>
 
-                        <div class="campo">
-                            <label for="produto">Produto ou EPI</label>
-                            <input type="text" id="produto" name="produto" required>
-                        </div>
+            <p>
+                <strong>Obrigatórios:</strong>
+                produto, descricao, tipo, unidade, quantidade, setor e colaborador.
+            </p>
 
-                        <div class="campo">
-                            <label for="quantidade">Quantidade</label>
-                            <input type="number" id="quantidade" name="quantidade" min="0" step="1" required>
-                        </div>
-                    </div>
+            <p>
+                <strong>Opcionais:</strong>
+                cor e tamanho.
+            </p>
 
-                    <button type="submit" class="botao-salvar">Salvar registro</button>
-                </form>
-            </section>
+            <p>
+                Os cabeçalhos precisam estar escritos exatamente nessa ordem:
+            </p>
 
-            <section class="painel registros">
-                <h3>
-                    <span class="icone-titulo">▤</span>
-                    Registros cadastrados
-                </h3>
+            <div class="lista-campos">
+                produto, descricao, tipo, cor, tamanho, unidade, quantidade, setor, colaborador
+            </div>
+        </div>
+    </section>
 
-                <div class="tabela-container">
-                    <table>
-                        <thead>
+    <?php if ($dadosVerificados && isset($_SESSION["importacao_csv"])): ?>
+        <section class="painel aprovado">
+            <h2>Planilha aprovada</h2>
+
+            <p><?= count($_SESSION["importacao_csv"]["linhas"]) ?> registros foram verificados.</p>
+
+            <p>
+                Arquivo:
+                <strong><?= htmlspecialchars($_SESSION["importacao_csv"]["arquivo"]) ?></strong>
+            </p>
+
+            <p>Todos os campos obrigatórios foram encontrados e os dados passaram pela verificação.</p>
+
+            <form method="POST">
+                <input type="hidden" name="acao" value="importar">
+                <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+
+                <button type="submit" class="botao-importar">
+                    Importar planilha
+                </button>
+            </form>
+        </section>
+    <?php endif; ?>
+
+    <section class="painel">
+        <h2>Registros cadastrados</h2>
+
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Cor</th>
+                        <th>Tamanho</th>
+                        <th>Unidade</th>
+                        <th>Quantidade</th>
+                        <th>Setor</th>
+                        <th>Colaborador</th>
+                        <th>Data de entrada</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if ($resultadoPlanilhas && $resultadoPlanilhas->num_rows > 0): ?>
+                        <?php while ($registro = $resultadoPlanilhas->fetch_assoc()): ?>
                             <tr>
-                                <th>ID</th>
-                                <th>Produto</th>
-                                <th>Descrição</th>
-                                <th>Tipo</th>
-                                <th>Quantidade</th>
-                                <th>Setor</th>
-                                <th>Entrada</th>
+                                <td><?= htmlspecialchars($registro["id_plan"]) ?></td>
+                                <td><?= htmlspecialchars($registro["produto"]) ?></td>
+                                <td><?= htmlspecialchars($registro["descricao"]) ?></td>
+                                <td><?= htmlspecialchars($registro["tipo"]) ?></td>
+                                <td><?= htmlspecialchars($registro["cor"] ?? "") ?></td>
+                                <td><?= htmlspecialchars($registro["tamanho"] ?? "") ?></td>
+                                <td><?= htmlspecialchars($registro["uni_med"]) ?></td>
+                                <td><?= htmlspecialchars($registro["quantidade"]) ?></td>
+                                <td><?= htmlspecialchars($registro["setor"]) ?></td>
+                                <td><?= htmlspecialchars($registro["colaborador"]) ?></td>
+                                <td><?= htmlspecialchars($registro["entrada"]) ?></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php if ($resultado && $resultado->num_rows > 0): ?>
-                                <?php while ($linha = $resultado->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?= (int) $linha["id_plan"] ?></td>
-                                        <td><?= htmlspecialchars($linha["produto"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["descricao"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["tipo"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= (int) $linha["quantidade"] ?></td>
-                                        <td><?= htmlspecialchars($linha["setor"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                        <td><?= htmlspecialchars($linha["entrada"] ?? "", ENT_QUOTES, "UTF-8") ?></td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="7" class="vazio">Nenhum registro cadastrado.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-    </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="11" class="vazio">Nenhum registro encontrado.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</div>
+
 </body>
 </html>
