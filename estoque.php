@@ -1,6 +1,4 @@
-
 <?php
-
 session_start();
 
 if (!isset($_SESSION["id_fun"])) {
@@ -11,6 +9,7 @@ if (!isset($_SESSION["id_fun"])) {
 require "connection.php";
 
 $tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$pesquisa = trim($_GET["pesquisa"] ?? "");
 
 $sql = "SELECT produto, setor, uni_med, SUM(quantidade) AS quantidade_total
         FROM planilhas
@@ -20,26 +19,15 @@ $sql = "SELECT produto, setor, uni_med, SUM(quantidade) AS quantidade_total
 
 $resultado = $conn->query($sql);
 
-$itens = [];
-$totalItens = 0;
-$totalUnidades = 0;
-$itensBaixos = 0;
+$itensOriginais = [];
 
 if ($resultado) {
     while ($linha = $resultado->fetch_assoc()) {
-        $itens[] = $linha;
-        $totalItens++;
-
-        $quantidade = (int) ($linha["quantidade_total"] ?? 0);
-        $totalUnidades += $quantidade;
-
-        if ($quantidade <= 5) {
-            $itensBaixos++;
-        }
+        $itensOriginais[] = $linha;
     }
 }
 
-$pesquisa = trim($_GET["pesquisa"] ?? "");
+$itens = $itensOriginais;
 
 if ($pesquisa !== "") {
     $itens = array_values(array_filter($itens, function ($item) use ($pesquisa) {
@@ -48,6 +36,60 @@ if ($pesquisa !== "") {
     }));
 }
 
+$totalItens = count($itens);
+$totalUnidades = 0;
+$itensBaixos = 0;
+$quantidadesPorSetor = [];
+$produtosOrdenados = [];
+
+foreach ($itens as $item) {
+    $quantidade = (int) ($item["quantidade_total"] ?? 0);
+    $produto = $item["produto"] ?? "Sem produto";
+    $setor = $item["setor"] ?? "Sem setor";
+    $unidade = $item["uni_med"] ?? "";
+
+    $totalUnidades += $quantidade;
+
+    if ($quantidade <= 5) {
+        $itensBaixos++;
+    }
+
+    if (!isset($quantidadesPorSetor[$setor])) {
+        $quantidadesPorSetor[$setor] = 0;
+    }
+
+    $quantidadesPorSetor[$setor] += $quantidade;
+
+    $produtosOrdenados[] = [
+        "nome" => $produto . " - " . $setor . " (" . $unidade . ")",
+        "quantidade" => $quantidade
+    ];
+}
+
+usort($produtosOrdenados, function ($a, $b) {
+    return $b["quantidade"] <=> $a["quantidade"];
+});
+
+$produtosOrdenados = array_slice($produtosOrdenados, 0, 10);
+
+arsort($quantidadesPorSetor);
+
+$labelsProdutos = array_column($produtosOrdenados, "nome");
+$dadosProdutos = array_column($produtosOrdenados, "quantidade");
+
+$labelsSetores = array_keys($quantidadesPorSetor);
+$dadosSetores = array_values($quantidadesPorSetor);
+
+$dadosSituacao = [
+    $itensBaixos,
+    $totalItens - $itensBaixos
+];
+
+function escapar($valor) {
+    return htmlspecialchars((string) ($valor ?? ""), ENT_QUOTES, "UTF-8");
+}
+
+$opcoesJson = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
 ?>
 
 <!DOCTYPE html>
@@ -57,6 +99,7 @@ if ($pesquisa !== "") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque - SIGEP-EPI</title>
     <link rel="stylesheet" href="estoque.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -149,6 +192,41 @@ if ($pesquisa !== "") {
                 </article>
             </section>
 
+            <section class="graficos">
+                <article class="painel-grafico">
+                    <div class="titulo-grafico">
+                        <h3>Produtos com maiores quantidades</h3>
+                        <p>Os 10 registros com maior quantidade.</p>
+                    </div>
+
+                    <div class="area-grafico">
+                        <canvas id="graficoProdutos"></canvas>
+                    </div>
+                </article>
+
+                <article class="painel-grafico">
+                    <div class="titulo-grafico">
+                        <h3>Quantidade por setor</h3>
+                        <p>Distribuição das quantidades registradas por setor.</p>
+                    </div>
+
+                    <div class="area-grafico">
+                        <canvas id="graficoSetores"></canvas>
+                    </div>
+                </article>
+
+                <article class="painel-grafico painel-situacao">
+                    <div class="titulo-grafico">
+                        <h3>Situação do estoque</h3>
+                        <p>Comparação entre registros com quantidade baixa e normal.</p>
+                    </div>
+
+                    <div class="area-grafico area-donut">
+                        <canvas id="graficoSituacao"></canvas>
+                    </div>
+                </article>
+            </section>
+
             <section class="painel">
                 <div class="titulo-painel">
                     <div>
@@ -162,7 +240,7 @@ if ($pesquisa !== "") {
                         type="search"
                         name="pesquisa"
                         placeholder="Pesquisar produto ou setor..."
-                        value="<?= htmlspecialchars($pesquisa, ENT_QUOTES, "UTF-8") ?>"
+                        value="<?= escapar($pesquisa) ?>"
                     >
 
                     <button type="submit">Pesquisar</button>
@@ -191,15 +269,15 @@ if ($pesquisa !== "") {
 
                                     <tr>
                                         <td class="produto">
-                                            <?= htmlspecialchars($item["produto"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                            <?= escapar($item["produto"]) ?>
                                         </td>
 
                                         <td>
-                                            <?= htmlspecialchars($item["setor"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                            <?= escapar($item["setor"]) ?>
                                         </td>
 
                                         <td>
-                                            <?= htmlspecialchars($item["uni_med"] ?? "", ENT_QUOTES, "UTF-8") ?>
+                                            <?= escapar($item["uni_med"]) ?>
                                         </td>
 
                                         <td>
@@ -235,6 +313,98 @@ if ($pesquisa !== "") {
             </footer>
         </main>
     </div>
+
+    <script>
+        const labelsProdutos = <?= json_encode($labelsProdutos, $opcoesJson) ?>;
+        const dadosProdutos = <?= json_encode($dadosProdutos, $opcoesJson) ?>;
+        const labelsSetores = <?= json_encode($labelsSetores, $opcoesJson) ?>;
+        const dadosSetores = <?= json_encode($dadosSetores, $opcoesJson) ?>;
+        const dadosSituacao = <?= json_encode($dadosSituacao, $opcoesJson) ?>;
+
+        if (typeof Chart !== "undefined") {
+            Chart.defaults.font.family = "Arial";
+            Chart.defaults.color = "#64748b";
+
+            new Chart(document.getElementById("graficoProdutos"), {
+                type: "bar",
+                data: {
+                    labels: labelsProdutos,
+                    datasets: [{
+                        label: "Quantidade",
+                        data: dadosProdutos,
+                        backgroundColor: "#2563eb",
+                        borderRadius: 6,
+                        maxBarThickness: 35
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById("graficoSetores"), {
+                type: "bar",
+                data: {
+                    labels: labelsSetores,
+                    datasets: [{
+                        label: "Quantidade",
+                        data: dadosSetores,
+                        backgroundColor: "#0f766e",
+                        borderRadius: 6,
+                        maxBarThickness: 45
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById("graficoSituacao"), {
+                type: "doughnut",
+                data: {
+                    labels: ["Quantidade baixa", "Quantidade normal"],
+                    datasets: [{
+                        data: dadosSituacao,
+                        backgroundColor: ["#f59e0b", "#2563eb"],
+                        borderWidth: 2,
+                        borderColor: "#ffffff"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 
