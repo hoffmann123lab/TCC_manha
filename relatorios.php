@@ -129,7 +129,7 @@ function escapar($valor) {
                 <div>
                     <span class="subtitulo">CONSULTA E EXPORTAÇÃO</span>
                     <h2>Relatórios</h2>
-                    <p>Consulte os registros e imprima os dados do sistema.</p>
+                    <p>Consulte os registros e gere apresentações individuais dos produtos.</p>
                 </div>
 
                 <button
@@ -156,7 +156,7 @@ function escapar($valor) {
             <section class="painel">
                 <div class="titulo-painel">
                     <h3>Relatório de registros</h3>
-                    <p>Dados consultados diretamente no banco de dados.</p>
+                    <p>Selecione um registro para visualizar sua apresentação completa.</p>
                 </div>
 
                 <form method="GET" action="relatorios.php" class="pesquisa">
@@ -189,6 +189,7 @@ function escapar($valor) {
                                 <th>Setor</th>
                                 <th>Entrada</th>
                                 <th>Saída</th>
+                                <th>Apresentação</th>
                             </tr>
                         </thead>
 
@@ -207,11 +208,19 @@ function escapar($valor) {
                                         <td><?= escapar($linha["setor"]) ?></td>
                                         <td><?= escapar($linha["entrada"]) ?></td>
                                         <td><?= escapar($linha["saida"]) ?></td>
+                                        <td>
+                                            <a
+                                                href="apresentacao.php?id=<?= (int) $linha["id_plan"] ?>"
+                                                class="botao-apresentacao"
+                                            >
+                                                Ver apresentação
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="11" class="vazio">
+                                    <td colspan="12" class="vazio">
                                         Nenhum registro encontrado.
                                     </td>
                                 </tr>

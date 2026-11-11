@@ -373,3 +373,70 @@ tbody tr:hover {
         padding: 18px;
     }
 }
+
+.conversor {
+    margin-bottom: 25px;
+}
+
+.painel-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.painel-topo p {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.icone-conversao {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 25px;
+}
+
+.area-conversao {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.area-conversao label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.area-conversao input[type="file"] {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px;
+    border: 1px dashed #94a3b8;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.nome-arquivo {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.botao-converter {
+    margin-top: 5px;
+}
+
+.aviso-conversao {
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.5;
+}
