@@ -6,7 +6,7 @@ session_start();
 require "connection.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: index.php");
+    header("Location: logar.php");
     exit;
 }
 
@@ -14,7 +14,7 @@ $email = trim($_POST["email"] ?? "");
 $senha = $_POST["senha"] ?? "";
 
 if ($email === "" || $senha === "") {
-    header("Location: index.php?erro=" . urlencode("Preencha o e-mail e a senha."));
+    header("Location: logar.php?erro=" . urlencode("Preencha o e-mail e a senha."));
     exit;
 }
 
@@ -26,7 +26,7 @@ $stmt = $conn->prepare(
 );
 
 if (!$stmt) {
-    header("Location: index.php?erro=" . urlencode("Erro ao processar o login."));
+    header("Location: logar.php?erro=" . urlencode("Erro ao processar o login."));
     exit;
 }
 
@@ -35,7 +35,7 @@ $stmt->execute();
 
 $resultado = $stmt->get_result();
 
-if ($resultado->num_rows === 1) {
+if ($resultado && $resultado->num_rows === 1) {
     $usuario = $resultado->fetch_assoc();
 
     if (password_verify($senha, $usuario["senha"])) {
@@ -57,7 +57,7 @@ if ($resultado->num_rows === 1) {
 $stmt->close();
 $conn->close();
 
-header("Location: index.php?erro=" . urlencode("E-mail ou senha incorretos."));
+header("Location: logar.php?erro=" . urlencode("E-mail ou senha incorretos."));
 exit;
 
 ?>

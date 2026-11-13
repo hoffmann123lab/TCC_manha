@@ -311,7 +311,7 @@ $atividades = $stmtAtividades->get_result();
 
                             <div class="atividade-item">
 
-                                <div class="atividade-icone"> _ </div>
+                                <div class="atividade-icone"> </div>
 
                                 <div class="atividade-info">
 
