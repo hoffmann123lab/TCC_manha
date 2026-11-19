@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <a href="configuracoes.php" class="ativo">⚙ <span>Configurações</span></a>
             </nav>
 
-            <a href="index.php" class="sair">🚪 <span>Sair</span></a>
+            <a href="" class="sair">🚪 <span>Sair</span></a>
         </aside>
 
         <main class="conteudo">

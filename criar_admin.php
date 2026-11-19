@@ -6,7 +6,7 @@ require "connection.php";
 $email = "admin@sigep.com";
 $senha = "Admin@123456";
 $nome = "Administrador";
-$idade = 30;
+$dataNascimento = "1996-01-01";
 
 $conn->query(
     "INSERT INTO cargo (nome_cargo)
@@ -58,15 +58,15 @@ $tipo = "Supervisor";
 
 $stmt = $conn->prepare(
     "INSERT INTO funcionario
-    (email, nome_fun, idade, senha, tipo, idCargo)
+    (email, nome_fun, data_nascimento, senha, tipo, idCargo)
     VALUES (?, ?, ?, ?, ?, ?)"
 );
 
 $stmt->bind_param(
-    "ssissi",
+    "sssssi",
     $email,
     $nome,
-    $idade,
+    $dataNascimento,
     $senhaHash,
     $tipo,
     $idCargo

@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -119,10 +120,12 @@ $opcoesJson = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
                     <span>Início</span>
                 </a>
 
-                <a href="producao.php">
-                    <span class="icone-menu">▤</span>
-                    <span>Produção</span>
-                </a>
+                <?php if ($tipoAcesso !== "Supervisor"): ?>
+                    <a href="producao.php">
+                        <span class="icone-menu">▤</span>
+                        <span>Produção</span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="analises.php">
                     <span class="icone-menu">▥</span>
@@ -157,7 +160,7 @@ $opcoesJson = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
                 </a>
             </nav>
 
-            <a href="index.php" class="sair">
+            <a href="logar.php" class="sair">
                 <span class="icone-menu">↪</span>
                 <span>Sair</span>
             </a>

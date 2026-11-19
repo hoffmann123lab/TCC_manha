@@ -1,3 +1,4 @@
+
 CREATE DATABASE IF NOT EXISTS sigep_epi;
 
 USE sigep_epi;
@@ -11,7 +12,7 @@ CREATE TABLE funcionario (
     id_fun INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
     nome_fun VARCHAR(150) NOT NULL,
-    idade INT NOT NULL,
+    data_nascimento DATE NOT NULL,
     senha VARCHAR(255) NOT NULL,
     tipo ENUM('Operador', 'Supervisor') NOT NULL,
     idCargo INT NOT NULL,
@@ -50,4 +51,3 @@ WHERE NOT EXISTS (
     FROM cargo
     WHERE nome_cargo = 'Supervisor'
 );
-

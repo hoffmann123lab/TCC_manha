@@ -7,100 +7,143 @@ $erro = "";
 
 $nome = "";
 $email = "";
-$idade = "";
+$dataNascimento = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
     $nome = trim($_POST["nome"] ?? "");
     $email = trim($_POST["email"] ?? "");
-    $idade = $_POST["idade"] ?? "";
+    $dataNascimento = $_POST["data_nascimento"] ?? "";
     $senha = $_POST["senha"] ?? "";
     $confirmarSenha = $_POST["confirmar_senha"] ?? "";
 
+    $dataValida = false;
+
+    if ($dataNascimento !== "") {
+        $data = DateTime::createFromFormat("!Y-m-d", $dataNascimento);
+
+        $dataValida = $data &&
+            $data->format("Y-m-d") === $dataNascimento &&
+            $data <= new DateTime("today");
+    }
+
     if ($nome === "") {
         $erro = "Preencha o nome.";
+
     } elseif ($email === "") {
         $erro = "Preencha o e-mail.";
-    } elseif ($idade === "" || !filter_var($idade, FILTER_VALIDATE_INT) || (int)$idade < 1) {
-        $erro = "Digite uma idade válida.";
-    } elseif ($senha === "") {
-        $erro = "Preencha a senha.";
-    } elseif ($confirmarSenha === "") {
-        $erro = "Confirme a senha.";
+
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro = "Digite um e-mail válido.";
+
+    } elseif (!$dataValida) {
+        $erro = "Digite uma data de nascimento válida.";
+
+    } elseif ($senha === "") {
+        $erro = "Preencha a senha.";
+
+    } elseif ($confirmarSenha === "") {
+        $erro = "Confirme a senha.";
+
     } elseif ($senha !== $confirmarSenha) {
         $erro = "As senhas não coincidem.";
+
     } elseif (strlen($senha) < 8) {
         $erro = "A senha deve ter pelo menos 8 caracteres.";
+
     } else {
+
         $verificar = $conn->prepare(
             "SELECT id_fun FROM funcionario WHERE email = ?"
         );
 
         if (!$verificar) {
             $erro = "Erro ao verificar o cadastro.";
+
         } else {
+
             $verificar->bind_param("s", $email);
             $verificar->execute();
+
             $resultado = $verificar->get_result();
 
             if ($resultado->num_rows > 0) {
                 $erro = "Este e-mail já está cadastrado.";
+
             } else {
+
                 $cargo = $conn->prepare(
                     "SELECT id_cargo FROM cargo WHERE nome_cargo = ? LIMIT 1"
                 );
 
-                $nomeCargo = "Operador";
-                $cargo->bind_param("s", $nomeCargo);
-                $cargo->execute();
-                $resultadoCargo = $cargo->get_result();
+                if (!$cargo) {
+                    $erro = "Erro ao verificar o cargo.";
 
-                if ($resultadoCargo->num_rows === 0) {
-                    $erro = "O cargo Operador não foi encontrado no banco de dados.";
                 } else {
-                    $dadosCargo = $resultadoCargo->fetch_assoc();
-                    $idCargo = (int)$dadosCargo["id_cargo"];
-                    $tipo = "Operador";
-                    $idadeInt = (int)$idade;
-                    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
-                    $stmt = $conn->prepare(
-                        "INSERT INTO funcionario
-                        (email, nome_fun, idade, senha, tipo, idCargo)
-                        VALUES (?, ?, ?, ?, ?, ?)"
-                    );
+                    $nomeCargo = "Operador";
 
-                    if (!$stmt) {
-                        $erro = "Erro ao preparar o cadastro.";
+                    $cargo->bind_param("s", $nomeCargo);
+                    $cargo->execute();
+
+                    $resultadoCargo = $cargo->get_result();
+
+                    if ($resultadoCargo->num_rows === 0) {
+                        $erro = "O cargo Operador não foi encontrado no banco de dados.";
+
                     } else {
-                        $stmt->bind_param(
-                            "ssissi",
-                            $email,
-                            $nome,
-                            $idadeInt,
-                            $senhaHash,
-                            $tipo,
-                            $idCargo
+
+                        $dadosCargo = $resultadoCargo->fetch_assoc();
+
+                        $idCargo = (int)$dadosCargo["id_cargo"];
+                        $tipo = "Operador";
+
+                        $senhaHash = password_hash(
+                            $senha,
+                            PASSWORD_DEFAULT
                         );
 
-                        if ($stmt->execute()) {
-                            $stmt->close();
-                            $cargo->close();
-                            $verificar->close();
-                            $conn->close();
+                        $stmt = $conn->prepare(
+                            "INSERT INTO funcionario
+                            (email, nome_fun, data_nascimento, senha, tipo, idCargo)
+                            VALUES (?, ?, ?, ?, ?, ?)"
+                        );
 
-                            header("Location: index.php?cadastro=sucesso");
-                            exit;
+                        if (!$stmt) {
+                            $erro = "Erro ao preparar o cadastro.";
+
                         } else {
-                            $erro = "Não foi possível cadastrar o usuário. Verifique os dados do banco.";
+
+                            $stmt->bind_param(
+                                "sssssi",
+                                $email,
+                                $nome,
+                                $dataNascimento,
+                                $senhaHash,
+                                $tipo,
+                                $idCargo
+                            );
+
+                            if ($stmt->execute()) {
+
+                                $stmt->close();
+                                $cargo->close();
+                                $verificar->close();
+                                $conn->close();
+
+                                header("Location: logar.php?cadastro=sucesso");
+                                exit;
+
+                            } else {
+                                $erro = "Não foi possível cadastrar o usuário. Verifique os dados do banco.";
+                            }
+
+                            $stmt->close();
                         }
-
-                        $stmt->close();
                     }
-                }
 
-                $cargo->close();
+                    $cargo->close();
+                }
             }
 
             $verificar->close();
@@ -109,7 +152,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -213,17 +255,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <div class="campo">
 
-                        <label for="idade">Idade</label>
+                        <label for="data_nascimento">Data de nascimento</label>
 
                         <div class="input-container">
 
                             <input
-                                type="number"
-                                id="idade"
-                                name="idade"
-                                placeholder="Digite sua idade"
-                                value="<?= htmlspecialchars($idade, ENT_QUOTES, "UTF-8") ?>"
-                                min="1"
+                                type="date"
+                                id="data_nascimento"
+                                name="data_nascimento"
+                                value="<?= htmlspecialchars($dataNascimento, ENT_QUOTES, "UTF-8") ?>"
+                                max="<?= date("Y-m-d") ?>"
+                                autocomplete="bday"
                                 required
                             >
 
@@ -291,7 +333,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <p>
                         Já tem uma conta?
-                        <a href="index.php">Entrar</a>
+                        <a href="logar.php">Entrar</a>
                     </p>
 
                 </div>

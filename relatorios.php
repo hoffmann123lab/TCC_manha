@@ -80,10 +80,12 @@ function escapar($valor) {
                     <span>Início</span>
                 </a>
 
-                <a href="producao.php">
-                    <span class="icone-menu">▤</span>
-                    <span>Produção</span>
-                </a>
+                <?php if ($tipoAcesso !== "Supervisor"): ?>
+                    <a href="producao.php">
+                        <span class="icone-menu">▤</span>
+                        <span>Produção</span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="analises.php">
                     <span class="icone-menu">▥</span>
@@ -118,7 +120,7 @@ function escapar($valor) {
                 </a>
             </nav>
 
-            <a href="index.php" class="sair">
+            <a href="logar.php" class="sair">
                 <span class="icone-menu">↪</span>
                 <span>Sair</span>
             </a>

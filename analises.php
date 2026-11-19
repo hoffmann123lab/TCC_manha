@@ -1,15 +1,18 @@
 
 <?php
+
 session_start();
 
 if (!isset($_SESSION["id_fun"])) {
-    header("Location: index.php");
+    header("Location: logar.php");
     exit;
 }
 
 require "connection.php";
 
 $tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$idFuncionario = (int) $_SESSION["id_fun"];
+$ehSupervisor = $tipoAcesso === "Supervisor";
 
 $totalRegistros = 0;
 $totalQuantidade = 0;
@@ -21,7 +24,20 @@ $sql = "SELECT produto, cor, tamanho, setor, quantidade
         WHERE produto IS NOT NULL
         AND produto <> ''";
 
-$resultado = $conn->query($sql);
+if (!$ehSupervisor) {
+    $sql .= " AND idFuncionario = ?";
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        die("Erro ao preparar consulta: " . htmlspecialchars($conn->error));
+    }
+
+    $stmt->bind_param("i", $idFuncionario);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+} else {
+    $resultado = $conn->query($sql);
+}
 
 if (!$resultado) {
     die("Erro ao consultar os dados: " . htmlspecialchars($conn->error));
@@ -61,6 +77,10 @@ while ($linha = $resultado->fetch_assoc()) {
 
         $setores[$setor] += $quantidade;
     }
+}
+
+if (!$ehSupervisor) {
+    $stmt->close();
 }
 
 $produtos = array_values($produtos);
@@ -107,6 +127,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,6 +135,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
     <link rel="stylesheet" href="analises.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
 <div class="dashboard">
@@ -122,6 +144,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
         <div class="logo">
             <div class="icone-logo">⚙</div>
+
             <div class="logo-texto">
                 <h1>SIGEP-EPI</h1>
                 <span>Sistema de Gestão</span>
@@ -131,15 +154,20 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
         <div class="menu-titulo">MENU PRINCIPAL</div>
 
         <nav>
+
             <a href="dashboard.php">
                 <span class="icone-menu">⌂</span>
                 <span>Início</span>
             </a>
 
-            <a href="producao.php">
-                <span class="icone-menu">▤</span>
-                <span>Produção</span>
-            </a>
+            <?php if (!$ehSupervisor): ?>
+
+                <a href="producao.php">
+                    <span class="icone-menu">▤</span>
+                    <span>Produção</span>
+                </a>
+
+            <?php endif; ?>
 
             <a href="analises.php" class="ativo">
                 <span class="icone-menu">▥</span>
@@ -161,20 +189,23 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
                 <span>Estoque</span>
             </a>
 
-            <?php if ($tipoAcesso === "Supervisor"): ?>
+            <?php if ($ehSupervisor): ?>
+
                 <a href="usuarios.php">
                     <span class="icone-menu">♙</span>
                     <span>Funcionários</span>
                 </a>
+
             <?php endif; ?>
 
             <a href="perfil.php">
                 <span class="icone-menu">⚙</span>
                 <span>Meu perfil</span>
             </a>
+
         </nav>
 
-        <a href="index.php" class="sair">
+        <a href="logar.php" class="sair">
             <span class="icone-menu">↪</span>
             <span>Sair</span>
         </a>
@@ -187,7 +218,12 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
             <div>
                 <span class="subtitulo">GESTÃO E INDICADORES</span>
                 <h2>Análises</h2>
-                <p>Visualização e comparação dos dados armazenados no sistema.</p>
+
+                <p>
+                    <?= $ehSupervisor
+                        ? "Visualização geral dos dados armazenados pela equipe."
+                        : "Visualização e comparação dos seus dados armazenados no sistema." ?>
+                </p>
             </div>
         </header>
 
@@ -195,6 +231,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
             <div class="card">
                 <div class="card-icone azul">▤</div>
+
                 <div class="card-conteudo">
                     <span>Registros armazenados</span>
                     <strong><?= $formatarNumero($totalRegistros) ?></strong>
@@ -203,6 +240,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
             <div class="card">
                 <div class="card-icone verde">▣</div>
+
                 <div class="card-conteudo">
                     <span>Quantidade total</span>
                     <strong><?= $formatarNumero($totalQuantidade) ?></strong>
@@ -211,6 +249,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
             <div class="card">
                 <div class="card-icone roxo">▦</div>
+
                 <div class="card-conteudo">
                     <span>Produtos diferentes</span>
                     <strong><?= $formatarNumero($totalProdutos) ?></strong>
@@ -224,6 +263,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
             <div class="painel-topo">
                 <div>
                     <h3>Quantidade por produto</h3>
+
                     <p class="descricao">
                         Os 10 produtos com maior quantidade registrada.
                     </p>
@@ -240,14 +280,20 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
                 <div class="vazio">
                     <div class="vazio-icone">▤</div>
+
                     <h4>Nenhum produto encontrado</h4>
+
                     <p>
                         Ainda não existem produtos registrados para gerar
                         o gráfico de análise.
                     </p>
-                    <a href="producao.php" class="botao-primario">
-                        Ir para Produção
-                    </a>
+
+                    <?php if (!$ehSupervisor): ?>
+                        <a href="producao.php" class="botao-primario">
+                            Ir para Produção
+                        </a>
+                    <?php endif; ?>
+
                 </div>
 
             <?php endif; ?>
@@ -257,8 +303,10 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
         <section class="painel">
 
             <div class="painel-topo">
+
                 <div>
                     <h3>Quantidade por setor</h3>
+
                     <p class="descricao">
                         Distribuição da quantidade de produtos entre os setores.
                     </p>
@@ -267,6 +315,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
                 <span class="contador-setores">
                     <?= $formatarNumero($totalSetores) ?> setores
                 </span>
+
             </div>
 
             <?php if (!empty($setores)): ?>
@@ -286,7 +335,9 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
                         <div class="barra-item">
 
                             <div class="barra-info">
+
                                 <div class="nome-setor">
+
                                     <span class="numero-setor">
                                         <?= $contador ?>
                                     </span>
@@ -294,18 +345,22 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
                                     <span class="texto-setor">
                                         <?= htmlspecialchars($nomeSetor) ?>
                                     </span>
+
                                 </div>
 
                                 <strong>
                                     <?= $formatarNumero($quantidadeSetor) ?>
                                 </strong>
+
                             </div>
 
                             <div class="barra-fundo">
+
                                 <div
                                     class="barra"
                                     style="width: <?= $porcentagem ?>%;"
                                 ></div>
+
                             </div>
 
                         </div>
@@ -320,7 +375,9 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
                 <div class="vazio">
                     <div class="vazio-icone">⌂</div>
+
                     <h4>Nenhum setor encontrado</h4>
+
                     <p>
                         Não existem informações de setores disponíveis
                         para gerar essa análise.
@@ -334,12 +391,15 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
         <section class="painel">
 
             <div class="painel-topo">
+
                 <div>
                     <h3>Produtos registrados</h3>
+
                     <p class="descricao">
                         Quantidade acumulada por produto, cor e tamanho.
                     </p>
                 </div>
+
             </div>
 
             <?php if (!empty($produtos)): ?>
@@ -392,15 +452,26 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
             <?php else: ?>
 
                 <div class="vazio">
+
                     <div class="vazio-icone">▦</div>
+
                     <h4>Nenhum registro encontrado</h4>
+
                     <p>
-                        Importe uma planilha na página Produção para
-                        visualizar os produtos nesta análise.
+                        <?php if ($ehSupervisor): ?>
+                            Ainda não existem registros importados pela equipe.
+                        <?php else: ?>
+                            Importe uma planilha na página Produção para
+                            visualizar os produtos nesta análise.
+                        <?php endif; ?>
                     </p>
-                    <a href="producao.php" class="botao-primario">
-                        Ir para Produção
-                    </a>
+
+                    <?php if (!$ehSupervisor): ?>
+                        <a href="producao.php" class="botao-primario">
+                            Ir para Produção
+                        </a>
+                    <?php endif; ?>
+
                 </div>
 
             <?php endif; ?>
@@ -413,6 +484,7 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
 
             <div>
                 <h3>Sobre as análises</h3>
+
                 <p>
                     Os indicadores são calculados com base nos registros
                     armazenados no banco de dados. Cada nova importação
@@ -472,3 +544,9 @@ if (elementoGrafico && typeof Chart !== "undefined") {
 
 </body>
 </html>
+
+<?php
+
+$conn->close();
+
+?>

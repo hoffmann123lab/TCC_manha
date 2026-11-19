@@ -1,11 +1,18 @@
+
 <?php
 session_start();
-require "connection.php";
 
 if (!isset($_SESSION["id_fun"])) {
-    header("Location: index.php");
+    header("Location: logar.php");
     exit;
 }
+
+if (($_SESSION["tipo"] ?? "") !== "Operador") {
+    header("Location: dashboard.php");
+    exit;
+}
+
+require "connection.php";
 
 $mensagem = "";
 $erros = [];
@@ -216,10 +223,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 unset($_SESSION["importacao_csv"]);
 
                 $mensagem = count($linhas) . " registros foram importados com sucesso!";
-                } catch (Exception $e) {
-                    $conn->rollback();
-                    $erros[] = "Erro ao salvar no banco: " . $e->getMessage();
-                }
+            } catch (Exception $e) {
+                $conn->rollback();
+                $erros[] = "Erro ao salvar no banco: " . $e->getMessage();
+            }
         }
     }
 }
@@ -228,12 +235,21 @@ if (isset($_SESSION["importacao_csv"]) && $_SERVER["REQUEST_METHOD"] !== "POST")
     unset($_SESSION["importacao_csv"]);
 }
 
-$sqlPlanilhas = "SELECT * FROM planilhas ORDER BY id_plan DESC";
-$resultadoPlanilhas = $conn->query($sqlPlanilhas);
+$idFuncionarioLogado = (int)$_SESSION["id_fun"];
+
+$stmtPlanilhas = $conn->prepare(
+    "SELECT * FROM planilhas WHERE idFuncionario = ? ORDER BY id_plan DESC"
+);
+
+$stmtPlanilhas->bind_param("i", $idFuncionarioLogado);
+$stmtPlanilhas->execute();
+
+$resultadoPlanilhas = $stmtPlanilhas->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -241,12 +257,16 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
     <link rel="stylesheet" href="producao.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
 
 <div class="dashboard">
+
     <aside class="menu">
+
         <div class="logo">
             <div class="icone-logo">⚙</div>
+
             <div class="logo-texto">
                 <h1>SIGEP-EPI</h1>
                 <span>Sistema de Gestão</span>
@@ -254,24 +274,51 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
         </div>
 
         <nav>
-            <a href="dashboard.php"><span class="icone-menu">⌂</span><span>Início</span></a>
-            <a href="producao.php" class="ativo"><span class="icone-menu">▤</span><span>Produção</span></a>
-            <a href="analises.php"><span class="icone-menu">▥</span><span>Análises</span></a>
-            <a href="planilhas.php"><span class="icone-menu">▦</span><span>Planilhas</span></a>
-            <a href="relatorios.php"><span class="icone-menu">▧</span><span>Relatórios</span></a>
-            <a href="estoque.php"><span class="icone-menu">▣</span><span>Estoque</span></a>
+            <a href="dashboard.php">
+                <span class="icone-menu">⌂</span>
+                <span>Início</span>
+            </a>
 
-            <?php if (($_SESSION["tipo"] ?? "") === "Supervisor"): ?>
-                <a href="usuarios.php"><span class="icone-menu">♙</span><span>Funcionários</span></a>
-            <?php endif; ?>
+            <a href="producao.php" class="ativo">
+                <span class="icone-menu">▤</span>
+                <span>Produção</span>
+            </a>
 
-            <a href="perfil.php"><span class="icone-menu">⚙</span><span>Meu perfil</span></a>
+            <a href="analises.php">
+                <span class="icone-menu">▥</span>
+                <span>Análises</span>
+            </a>
+
+            <a href="planilhas.php">
+                <span class="icone-menu">▦</span>
+                <span>Planilhas</span>
+            </a>
+
+            <a href="relatorios.php">
+                <span class="icone-menu">▧</span>
+                <span>Relatórios</span>
+            </a>
+
+            <a href="estoque.php">
+                <span class="icone-menu">▣</span>
+                <span>Estoque</span>
+            </a>
+
+            <a href="perfil.php">
+                <span class="icone-menu">⚙</span>
+                <span>Meu perfil</span>
+            </a>
         </nav>
 
-        <a href="index.php" class="sair"><span class="icone-menu">↪</span><span>Sair</span></a>
+        <a href="logar.php" class="sair">
+            <span class="icone-menu">↪</span>
+            <span>Sair</span>
+        </a>
+
     </aside>
 
     <main class="conteudo">
+
         <header class="cabecalho">
             <div>
                 <h1>Importação de produção</h1>
@@ -288,6 +335,7 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
         <?php if (!empty($erros)): ?>
             <div class="mensagem erro">
                 <strong>Não foi possível aprovar a planilha:</strong>
+
                 <ul>
                     <?php foreach (array_slice($erros, 0, 30) as $erro): ?>
                         <li><?= htmlspecialchars($erro) ?></li>
@@ -301,6 +349,7 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
         <?php endif; ?>
 
         <section class="painel">
+
             <h2>Selecionar planilha</h2>
 
             <p class="descricao">
@@ -308,11 +357,13 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
             </p>
 
             <form method="POST" class="formulario" id="formularioImportacao">
+
                 <input type="hidden" name="acao" value="verificar">
                 <input type="hidden" name="conteudo_csv" id="conteudoCsv">
                 <input type="hidden" name="nome_arquivo" id="nomeArquivo">
 
                 <label for="arquivo">Arquivo da planilha</label>
+
                 <input
                     type="file"
                     id="arquivo"
@@ -328,9 +379,11 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
                 <button type="submit" id="botaoVerificar" <?= $dadosVerificados ? "disabled" : "" ?>>
                     Verificar planilha
                 </button>
+
             </form>
 
             <div class="campos">
+
                 <h3>Campos obrigatórios e opcionais</h3>
 
                 <p>
@@ -350,11 +403,15 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
                 <div class="lista-campos">
                     produto, descricao, tipo, cor, tamanho, unidade, quantidade, setor, colaborador
                 </div>
+
             </div>
+
         </section>
 
         <?php if ($dadosVerificados && isset($_SESSION["importacao_csv"])): ?>
+
             <section class="painel aprovado">
+
                 <h2>Planilha aprovada</h2>
 
                 <p><?= count($_SESSION["importacao_csv"]["linhas"]) ?> registros foram verificados.</p>
@@ -374,14 +431,19 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
                         Importar planilha
                     </button>
                 </form>
+
             </section>
+
         <?php endif; ?>
 
         <section class="painel">
-            <h2>Registros cadastrados</h2>
+
+            <h2>Meus registros cadastrados</h2>
 
             <div class="tabela-container">
+
                 <table>
+
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -399,8 +461,11 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
                     </thead>
 
                     <tbody>
+
                         <?php if ($resultadoPlanilhas && $resultadoPlanilhas->num_rows > 0): ?>
+
                             <?php while ($registro = $resultadoPlanilhas->fetch_assoc()): ?>
+
                                 <tr>
                                     <td><?= htmlspecialchars($registro["id_plan"]) ?></td>
                                     <td><?= htmlspecialchars($registro["produto"]) ?></td>
@@ -414,17 +479,27 @@ $resultadoPlanilhas = $conn->query($sqlPlanilhas);
                                     <td><?= htmlspecialchars($registro["colaborador"]) ?></td>
                                     <td><?= htmlspecialchars($registro["entrada"]) ?></td>
                                 </tr>
+
                             <?php endwhile; ?>
+
                         <?php else: ?>
+
                             <tr>
                                 <td colspan="11" class="vazio">Nenhum registro encontrado.</td>
                             </tr>
+
                         <?php endif; ?>
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </section>
+
     </main>
+
 </div>
 
 <script>
@@ -474,6 +549,7 @@ formularioImportacao.addEventListener("submit", async function(evento) {
             }
 
             const planilha = pastaTrabalho.Sheets[primeiraAba];
+
             conteudoCsv = XLSX.utils.sheet_to_csv(planilha, {
                 FS: ";",
                 RS: "\r\n"
@@ -494,10 +570,13 @@ formularioImportacao.addEventListener("submit", async function(evento) {
         campoNomeArquivo.value = arquivo.name;
 
         formularioImportacao.submit();
+
     } catch (erro) {
         alert(erro.message);
+
         botaoVerificar.disabled = false;
         botaoVerificar.textContent = "Verificar planilha";
+
         ajudaArquivo.textContent = "Formatos aceitos: Excel (.xlsx, .xls) e CSV. Tamanho máximo: 10 MB.";
     }
 });
