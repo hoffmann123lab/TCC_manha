@@ -10,33 +10,56 @@ if (!isset($_SESSION["id_fun"])) {
 require "connection.php";
 
 $tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$idFuncionario = (int) $_SESSION["id_fun"];
 $pesquisa = trim($_GET["pesquisa"] ?? "");
 
+$sql = "SELECT id_plan, nome_plan, produto, descricao, tipo,
+        uni_med, colaborador, setor, quantidade, entrada, saida
+        FROM planilhas";
+
+if ($tipoAcesso !== "Supervisor") {
+    $sql .= " WHERE idFuncionario = ?";
+}
+
 if ($pesquisa !== "") {
+    if ($tipoAcesso !== "Supervisor") {
+        $sql .= " AND (produto LIKE ? OR descricao LIKE ? OR setor LIKE ? OR colaborador LIKE ?)";
+    } else {
+        $sql .= " WHERE produto LIKE ? OR descricao LIKE ? OR setor LIKE ? OR colaborador LIKE ?";
+    }
+}
+
+$sql .= " ORDER BY id_plan DESC";
+
+$stmt = $conn->prepare($sql);
+
+if ($tipoAcesso !== "Supervisor" && $pesquisa !== "") {
     $termo = "%" . $pesquisa . "%";
 
-    $stmt = $conn->prepare(
-        "SELECT id_plan, nome_plan, produto, descricao, tipo,
-        uni_med, colaborador, setor, quantidade, entrada, saida
-        FROM planilhas
-        WHERE produto LIKE ?
-        OR descricao LIKE ?
-        OR setor LIKE ?
-        OR colaborador LIKE ?
-        ORDER BY id_plan DESC"
+    $stmt->bind_param(
+        "issss",
+        $idFuncionario,
+        $termo,
+        $termo,
+        $termo,
+        $termo
     );
+} elseif ($tipoAcesso !== "Supervisor") {
+    $stmt->bind_param("i", $idFuncionario);
+} elseif ($pesquisa !== "") {
+    $termo = "%" . $pesquisa . "%";
 
-    $stmt->bind_param("ssss", $termo, $termo, $termo, $termo);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-} else {
-    $resultado = $conn->query(
-        "SELECT id_plan, nome_plan, produto, descricao, tipo,
-        uni_med, colaborador, setor, quantidade, entrada, saida
-        FROM planilhas
-        ORDER BY id_plan DESC"
+    $stmt->bind_param(
+        "ssss",
+        $termo,
+        $termo,
+        $termo,
+        $termo
     );
 }
+
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 $totalRegistros = 0;
 $totalQuantidade = 0;
@@ -49,6 +72,8 @@ if ($resultado) {
         $totalQuantidade += (int) ($linha["quantidade"] ?? 0);
     }
 }
+
+$stmt->close();
 
 function escapar($valor) {
     return htmlspecialchars((string) ($valor ?? ""), ENT_QUOTES, "UTF-8");
@@ -158,7 +183,13 @@ function escapar($valor) {
             <section class="painel">
                 <div class="titulo-painel">
                     <h3>Relatório de registros</h3>
-                    <p>Selecione um registro para visualizar sua apresentação completa.</p>
+                    <p>
+                        <?php if ($tipoAcesso === "Supervisor"): ?>
+                            Consulte os registros de todos os funcionários.
+                        <?php else: ?>
+                            Consulte os seus próprios registros.
+                        <?php endif; ?>
+                    </p>
                 </div>
 
                 <form method="GET" action="relatorios.php" class="pesquisa">

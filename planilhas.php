@@ -10,33 +10,54 @@ if (!isset($_SESSION["id_fun"])) {
 require "connection.php";
 
 $tipoAcesso = $_SESSION["tipo"] ?? "Operador";
+$idFuncionario = (int) $_SESSION["id_fun"];
 $pesquisa = trim($_GET["pesquisa"] ?? "");
 
+$sql = "SELECT id_plan, nome_plan, produto, descricao, tipo, uni_med,
+        colaborador, setor, quantidade, entrada, saida
+        FROM planilhas";
+
+if ($tipoAcesso !== "Supervisor") {
+    $sql .= " WHERE idFuncionario = ?";
+}
+
 if ($pesquisa !== "") {
+    if ($tipoAcesso !== "Supervisor") {
+        $sql .= " AND (nome_plan LIKE ? OR produto LIKE ? OR descricao LIKE ? OR setor LIKE ?)";
+    } else {
+        $sql .= " WHERE nome_plan LIKE ? OR produto LIKE ? OR descricao LIKE ? OR setor LIKE ?";
+    }
+}
+
+$sql .= " ORDER BY id_plan DESC";
+
+$stmt = $conn->prepare($sql);
+
+if ($tipoAcesso !== "Supervisor" && $pesquisa !== "") {
     $termo = "%" . $pesquisa . "%";
-
-    $stmt = $conn->prepare(
-        "SELECT id_plan, nome_plan, produto, descricao, tipo, uni_med,
-        colaborador, setor, quantidade, entrada, saida
-        FROM planilhas
-        WHERE nome_plan LIKE ?
-        OR produto LIKE ?
-        OR descricao LIKE ?
-        OR setor LIKE ?
-        ORDER BY id_plan DESC"
+    $stmt->bind_param(
+        "issss",
+        $idFuncionario,
+        $termo,
+        $termo,
+        $termo,
+        $termo
     );
-
-    $stmt->bind_param("ssss", $termo, $termo, $termo, $termo);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-} else {
-    $resultado = $conn->query(
-        "SELECT id_plan, nome_plan, produto, descricao, tipo, uni_med,
-        colaborador, setor, quantidade, entrada, saida
-        FROM planilhas
-        ORDER BY id_plan DESC"
+} elseif ($tipoAcesso !== "Supervisor") {
+    $stmt->bind_param("i", $idFuncionario);
+} elseif ($pesquisa !== "") {
+    $termo = "%" . $pesquisa . "%";
+    $stmt->bind_param(
+        "ssss",
+        $termo,
+        $termo,
+        $termo,
+        $termo
     );
 }
+
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 $registros = [];
 
@@ -45,6 +66,8 @@ if ($resultado) {
         $registros[] = $linha;
     }
 }
+
+$stmt->close();
 
 function escapar($valor) {
     return htmlspecialchars((string) ($valor ?? ""), ENT_QUOTES, "UTF-8");
@@ -130,10 +153,12 @@ function escapar($valor) {
                     <p>Consulte e pesquise os registros armazenados no sistema.</p>
                 </div>
 
-                <a href="producao.php" class="botao-novo">
-                    <span class="mais">+</span>
-                    Novo registro
-                </a>
+                <?php if ($tipoAcesso !== "Supervisor"): ?>
+                    <a href="producao.php" class="botao-novo">
+                        <span class="mais">+</span>
+                        Novo registro
+                    </a>
+                <?php endif; ?>
             </header>
 
             <section class="indicadores">
@@ -160,7 +185,13 @@ function escapar($valor) {
                 <div class="painel-topo">
                     <div>
                         <h3>Planilhas cadastradas</h3>
-                        <p>Visualize os registros armazenados no sistema.</p>
+                        <p>
+                            <?php if ($tipoAcesso === "Supervisor"): ?>
+                                Visualize as planilhas cadastradas por todos os funcionários.
+                            <?php else: ?>
+                                Visualize as planilhas cadastradas por você.
+                            <?php endif; ?>
+                        </p>
                     </div>
 
                     <span class="contador">
@@ -212,10 +243,13 @@ function escapar($valor) {
                                                 #<?= (int) $linha["id_plan"] ?>
                                             </span>
                                         </td>
+
                                         <td class="nome-planilha">
                                             <?= escapar($linha["nome_plan"]) ?>
                                         </td>
+
                                         <td><?= escapar($linha["produto"]) ?></td>
+
                                         <td>
                                             <?php if (!empty($linha["tipo"])): ?>
                                                 <span class="etiqueta">
@@ -225,9 +259,11 @@ function escapar($valor) {
                                                 <span class="sem-dado">—</span>
                                             <?php endif; ?>
                                         </td>
+
                                         <td class="quantidade">
                                             <?= escapar($linha["quantidade"]) ?>
                                         </td>
+
                                         <td><?= escapar($linha["uni_med"]) ?></td>
                                         <td><?= escapar($linha["setor"]) ?></td>
                                         <td><?= escapar($linha["entrada"]) ?></td>

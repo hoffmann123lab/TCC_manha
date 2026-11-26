@@ -150,9 +150,6 @@ $maximoSetor = !empty($valoresSetores) ? max($valoresSetores) : 0;
                 <span>Sistema de Gestão</span>
             </div>
         </div>
-
-        <div class="menu-titulo">MENU PRINCIPAL</div>
-
         <nav>
 
             <a href="dashboard.php">

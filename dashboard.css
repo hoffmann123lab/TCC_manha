@@ -5,10 +5,21 @@
     box-sizing: border-box;
 }
 
+:root {
+    --azul-escuro: #1e3a5f;
+    --azul: #2563eb;
+    --azul-claro: #eff6ff;
+    --fundo: #f8fafc;
+    --branco: #ffffff;
+    --texto: #1e293b;
+    --texto-secundario: #64748b;
+    --borda: #e2e8f0;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f7fb;
-    color: #1e293b;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
 }
 
 a {
@@ -26,12 +37,13 @@ a {
     position: fixed;
     top: 0;
     left: 0;
-    background: #17365d;
-    color: white;
+    z-index: 10;
+    background: var(--azul-escuro);
+    color: var(--branco);
     padding: 25px 15px;
     display: flex;
     flex-direction: column;
-    z-index: 10;
+    overflow-y: auto;
 }
 
 .logo {
@@ -45,14 +57,18 @@ a {
 .icone-logo {
     width: 42px;
     height: 42px;
-    background: white;
-    color: #17365d;
+    flex-shrink: 0;
+    background: var(--branco);
+    color: var(--azul-escuro);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 25px;
-    flex-shrink: 0;
+}
+
+.logo-texto {
+    min-width: 0;
 }
 
 .logo h1 {
@@ -66,44 +82,60 @@ a {
     opacity: 0.75;
 }
 
-nav {
+.menu nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
     margin-top: 30px;
 }
 
-nav a,
-.sair {
+.menu nav a,
+.menu .sair {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: 8px;
+    gap: 13px;
+    padding: 13px 14px;
+    border-radius: 9px;
     font-size: 14px;
-    transition: 0.2s;
+    color: #e2e8f0;
+    transition: background 0.2s, color 0.2s;
 }
 
 .icone-menu {
-    width: 20px;
+    width: 21px;
+    min-width: 21px;
+    height: 24px;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 19px;
+    line-height: 1;
 }
 
-nav a:hover,
-nav a.ativo {
-    background: #2563eb;
+.menu nav a > span:not(.icone-menu),
+.menu .sair > span:not(.icone-menu) {
+    line-height: 24px;
 }
 
-.sair {
+.menu nav a:hover,
+.menu nav a.ativo {
+    background: var(--azul);
+    color: var(--branco);
+}
+
+.menu nav a.ativo {
+    font-weight: bold;
+    box-shadow: inset 4px 0 0 #ffffff;
+}
+
+.menu .sair {
     margin-top: auto;
 }
 
-.sair:hover {
-    background: #ffffff20;
+.menu .sair:hover {
+    background: #ffffff18;
+    color: var(--branco);
 }
 
 .conteudo {
@@ -121,7 +153,7 @@ nav a.ativo {
 }
 
 .subtitulo {
-    color: #2563eb;
+    color: var(--azul);
     font-size: 12px;
     font-weight: bold;
     letter-spacing: 1px;
@@ -133,7 +165,7 @@ nav a.ativo {
 }
 
 .topo p {
-    color: #64748b;
+    color: var(--texto-secundario);
     font-size: 14px;
 }
 
@@ -148,8 +180,8 @@ nav a.ativo {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: #2563eb;
-    color: white;
+    background: var(--azul);
+    color: var(--branco);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,7 +200,7 @@ nav a.ativo {
 
 .usuario-info span {
     font-size: 12px;
-    color: #64748b;
+    color: var(--texto-secundario);
     margin-top: 4px;
 }
 
@@ -180,8 +212,8 @@ nav a.ativo {
 }
 
 .card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--branco);
+    border: 1px solid var(--borda);
     border-radius: 12px;
     padding: 22px;
     display: flex;
@@ -194,8 +226,8 @@ nav a.ativo {
     width: 45px;
     height: 45px;
     flex-shrink: 0;
-    background: #eff6ff;
-    color: #2563eb;
+    background: var(--azul-claro);
+    color: var(--azul);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -205,7 +237,7 @@ nav a.ativo {
 
 .card span {
     display: block;
-    color: #64748b;
+    color: var(--texto-secundario);
     font-size: 13px;
     margin-bottom: 5px;
 }
@@ -231,8 +263,8 @@ nav a.ativo {
 }
 
 .acao {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--branco);
+    border: 1px solid var(--borda);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -243,7 +275,7 @@ nav a.ativo {
 }
 
 .acao:hover {
-    border-color: #2563eb;
+    border-color: var(--azul);
     transform: translateY(-2px);
 }
 
@@ -251,8 +283,8 @@ nav a.ativo {
     width: 45px;
     height: 45px;
     flex-shrink: 0;
-    background: #eff6ff;
-    color: #2563eb;
+    background: var(--azul-claro);
+    color: var(--azul);
     border-radius: 9px;
     display: flex;
     align-items: center;
@@ -275,48 +307,48 @@ nav a.ativo {
 }
 
 .acao span {
-    color: #64748b;
+    color: var(--texto-secundario);
     font-size: 13px;
     margin-top: 4px;
 }
 
 .acao b {
-    color: #2563eb;
+    color: var(--azul);
     font-size: 20px;
 }
 
 .atividade {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--branco);
+    border: 1px solid var(--borda);
     border-radius: 12px;
     padding: 25px;
 }
 
 .secao-titulo span {
-    color: #64748b;
+    color: var(--texto-secundario);
     font-size: 13px;
 }
 
 .atividade-vazia {
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--borda);
     margin-top: 20px;
     padding: 35px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    color: #64748b;
+    color: var(--texto-secundario);
     text-align: center;
 }
 
 .atividade-vazia div {
     font-size: 30px;
     margin-bottom: 5px;
-    color: #2563eb;
+    color: var(--azul);
 }
 
 .atividade-vazia strong {
-    color: #1e293b;
+    color: var(--texto);
 }
 
 @media (max-width: 1200px) {
@@ -357,13 +389,13 @@ nav a.ativo {
 
     .logo h1,
     .logo span,
-    nav a span:not(.icone-menu),
-    .sair span:not(.icone-menu) {
+    .menu nav a > span:not(.icone-menu),
+    .menu .sair > span:not(.icone-menu) {
         display: none;
     }
 
-    nav a,
-    .sair {
+    .menu nav a,
+    .menu .sair {
         justify-content: center;
         padding: 14px 8px;
     }
